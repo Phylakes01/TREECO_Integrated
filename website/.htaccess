@@ -1,0 +1,4 @@
+Options -Indexes
+<FilesMatch "^(config\.php|device_config\.php|.*\.(py|pkl|csv|sql))$">
+    Require all denied
+</FilesMatch>
