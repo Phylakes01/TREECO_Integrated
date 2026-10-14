@@ -1,4 +1,4 @@
-# TREECO — Complete updated package
+# TREECO 
 
 **ESP32 ang hotspot.** Ikonekta rito ang computer na nagpapatakbo ng original PHP/MySQL website. Pagbukas ng dashboard, automatic na kukunin at ise-save ang sensor readings. Walang router credentials, computer IP, website URL, o device key na kailangang ilagay sa firmware.
 
