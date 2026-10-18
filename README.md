@@ -33,6 +33,7 @@
   - [4. Compost Maturity & Bioavailability Fertilizer Engine](#4-compost-maturity--bioavailability-fertilizer-engine)
   - [5. Philippine Seasonal Cropping Guide (PAGASA-Aligned)](#5-philippine-seasonal-cropping-guide-pagasa-aligned)
 - [System Architecture & Hardware Schematics](#-system-architecture--hardware-schematics)
+  - [Hardware Schematics & Wiring Diagrams](#hardware-schematics--wiring-diagrams)
 - [Repository Structure](#-repository-structure)
 - [Installation & Setup Guide](#-installation--setup-guide)
 - [Research & Agronomic Foundations](#-research--agronomic-foundations)
@@ -187,7 +188,16 @@ Ipinapakita ng feature importance analysis kung aling mga katangian ng lupa ang 
  +---------------------------------------------------------+
 ```
 
+### Hardware Schematics & Wiring Diagrams
+
+| **Circuit Schematic Diagram** | **PCB & Wiring Connection Layout** |
+|:---:|:---:|
+| <img src="schem/69dc9a4c-27d9-4b73-83bf-49ac07df4dc4.jpg" alt="TREECO Circuit Schematic" width="460" /> | <img src="schem/5f13eef9-25a9-4d32-9b59-1e4b7f230f3d.jpg" alt="TREECO Wiring Layout" width="460" /> |
+| *Fritzing Schematic (`69dc9a4c`): ESP32 DevKit, MAX485 TTL module, LM2596 12V-to-5V buck converter, 2.1mm DC barrel jack, at 7-in-1 Soil Sensor.* | *PCB & Wiring Layout (`5f13eef9`): Physical pin routings, power rails, switch circuit, at RS485 communication line interconnections.* |
+
 Ang buong Fritzing wiring diagram, schematics, at sensor manual ay matatagpuan sa direktoryo ng [schem/](file:///c:/xampp/htdocs/TREECO_Integrated/schem):
+- [Circuit Schematic Image (69dc9a4c...)](file:///c:/xampp/htdocs/TREECO_Integrated/schem/69dc9a4c-27d9-4b73-83bf-49ac07df4dc4.jpg)
+- [PCB Wiring Layout Image (5f13eef9...)](file:///c:/xampp/htdocs/TREECO_Integrated/schem/5f13eef9-25a9-4d32-9b59-1e4b7f230f3d.jpg)
 - [T.R.E.E.C.O. Schematic PDF](file:///c:/xampp/htdocs/TREECO_Integrated/schem/T.R.E.E.C.O._schem.pdf)
 - [7-in-1 Soil Sensor Manual](file:///c:/xampp/htdocs/TREECO_Integrated/schem/7%20in%201%20soil%20sensor%20manual.pdf)
 - [Fritzing Project File (.fzz)](file:///c:/xampp/htdocs/TREECO_Integrated/schem/T.R.E.E.C.O.fzz)
@@ -214,10 +224,11 @@ TREECO_Integrated/
 │   └── feature_importance.png                 # Soil parameter weights bar chart
 │
 ├── schem/                                     # Electrical Schematics & Hardware Diagrams
+│   ├── 69dc9a4c-27d9-4b73-83bf-49ac07df4dc4.jpg # Circuit schematic diagram image
+│   ├── 5f13eef9-25a9-4d32-9b59-1e4b7f230f3d.jpg # PCB and wiring layout diagram image
 │   ├── T.R.E.E.C.O._schem.pdf                 # Circuit schematic diagram
 │   ├── T.R.E.E.C.O.fzz                        # Fritzing project file
-│   ├── 7 in 1 soil sensor manual.pdf          # Modbus register and sensor pinout manual
-│   └── *.jpg                                  # Breadboard and prototype wiring photos
+│   └── 7 in 1 soil sensor manual.pdf          # Modbus register and sensor pinout manual
 │
 └── website/                                   # Web Application & Machine Learning APIs
     ├── index.html                             # Single-page dashboard UI (Bootstrap 5 + Chart.js)
