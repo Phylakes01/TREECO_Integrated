@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T.R.E.E.C.O. System</title>
-    <!-- Custom Favicon & App Icons (replaces default XAMPP/localhost icon) -->
+    <!-- Custom Favicon & App Icons -->
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
@@ -19,6 +19,8 @@
     <style>
         :root {
             --primary-green: #1b4332;
+            --accent-green: #2d6a4f;
+            --light-green: #d8f3dc;
             --dark-text: #212529;
             --bg-light: #f4f6f5;
         }
@@ -33,13 +35,14 @@
 
         .app-wrapper {
             display: flex;
-            width: 100vw;
+            width: 100%;
+            max-width: 100%;
             min-height: 100vh;
         }
 
         #sidebar {
-            width: 240px;
-            min-width: 240px;
+            width: 250px;
+            min-width: 250px;
             background-color: var(--primary-green);
             color: #ffffff;
             display: flex;
@@ -70,11 +73,12 @@
 
         #sidebar .nav-link {
             color: #d8f3dc;
-            padding: 12px 20px;
+            padding: 11px 18px;
             cursor: pointer;
             border-left: 4px solid transparent;
             display: flex;
             align-items: center;
+            font-size: 0.95rem;
         }
 
         #sidebar .nav-link i {
@@ -84,29 +88,30 @@
 
         #sidebar .nav-link:hover, #sidebar .nav-link.active {
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.12);
+            border-left-color: #52b788;
             font-weight: 600;
         }
 
         #main-content {
             flex-grow: 1;
-            width: calc(100% - 240px);
+            width: calc(100% - 250px);
+            min-width: 0;
             padding: 25px;
             overflow-y: auto;
         }
 
         .card {
             background-color: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            box-shadow: none;
+            border-radius: 10px;
+            border: 1px solid #e0e6e3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             margin-bottom: 20px;
         }
 
         .chart-container-fix {
             position: relative;
-            height: 300px;
+            height: 320px;
             width: 100%;
         }
 
@@ -123,6 +128,11 @@
             color: #ffffff;
         }
 
+        .badge-stable {
+            background-color: #2d6a4f;
+            color: #ffffff;
+        }
+
         .text-primary-green {
             color: var(--primary-green);
         }
@@ -133,9 +143,1410 @@
             color: var(--dark-text);
             border-radius: 8px;
         }
+
+        .metric-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .crop-badge-plant {
+            background-color: #2d6a4f;
+            color: #ffffff;
+        }
+        .crop-badge-harvest {
+            background-color: #d97706;
+            color: #ffffff;
+        }
+
+        .progress-bar-stable {
+            background-color: #2d6a4f;
+        }
+
+        /* ===== LIVE INDICATOR DOT ===== */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        .live-indicator .live-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.4s ease;
+        }
+        .live-indicator.offline {
+            background: #f1f3f5;
+            color: #868e96;
+        }
+        .live-indicator.offline .live-dot {
+            background-color: #adb5bd;
+        }
+        .live-indicator.online {
+            background: #d3f9d8;
+            color: #1b4332;
+        }
+        .live-indicator.online .live-dot {
+            background-color: #2b8a3e;
+            animation: livePulse 1.4s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(43,138,62,0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(43,138,62,0); }
+        }
+
+        /* ===== ANALYZE NOW BUTTON ===== */
+        .btn-analyze {
+            background: linear-gradient(135deg, #2d6a4f, #1b4332);
+            color: #fff;
+            border: none;
+            padding: 7px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(27,67,50,0.25);
+        }
+        .btn-analyze:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(27,67,50,0.35);
+            background: linear-gradient(135deg, #40916c, #2d6a4f);
+        }
+        .btn-analyze:active {
+            transform: translateY(0);
+        }
+        .btn-analyze .spinner-border {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+        }
+
+        /* ===== ANALYSIS MODAL OVERLAY ===== */
+        .analysis-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+        .analysis-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .analysis-modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+            transform: translateY(40px) scale(0.95);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s ease;
+        }
+        .analysis-overlay.show .analysis-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        .analysis-modal-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .analysis-modal-header h4 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .analysis-modal-header .close-btn {
+            background: #f1f3f5;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #495057;
+        }
+        .analysis-modal-header .close-btn:hover {
+            background: #dee2e6;
+            color: #212529;
+        }
+        .analysis-modal-body {
+            padding: 24px 28px 28px;
+        }
+        .analysis-timestamp {
+            font-size: 0.78rem;
+            color: #868e96;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .analysis-section {
+            margin-bottom: 24px;
+        }
+        .analysis-section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .analysis-harvest-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 16px;
+            padding: 22px 24px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.06);
+            animation: slideInUp 0.4s ease 0.1s both;
+        }
+        .analysis-harvest-card .harvest-title {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 6px;
+        }
+        .analysis-harvest-card .harvest-number-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 8px;
+            margin: 4px 0 10px;
+        }
+        .analysis-harvest-card h1 {
+            font-size: 3.4rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+        .analysis-harvest-card .harvest-unit {
+            font-size: 1.25rem;
+            color: #166534;
+            font-weight: 700;
+        }
+        .analysis-harvest-card .harvest-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #86efac;
+        }
+        .analysis-harvest-card .harvest-meta-pill {
+            background: #ffffff;
+            border: 1px solid #bbf7d0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #166534;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        /* Nutrient bar chart in modal */
+        .nutrient-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            animation: slideInUp 0.4s ease 0.15s both;
+        }
+        @media (max-width: 768px) {
+            .nutrient-bars { grid-template-columns: 1fr; }
+        }
+        .nutrient-bar-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
+        .nutrient-bar-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .nutrient-bar-item .nb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .nutrient-bar-item .nb-label {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+        }
+        .nutrient-bar-item .nb-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+        .nutrient-bar-item .nb-value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+        .nutrient-bar-item .nb-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-green);
+        }
+        .nutrient-bar-item .nb-unit {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .nutrient-bar-item .nb-track {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .nutrient-bar-item .nb-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Live data snapshot grid */
+        .live-snapshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+            gap: 10px;
+            animation: slideInUp 0.4s ease 0.2s both;
+        }
+        .live-snap-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .live-snap-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-green);
+            box-shadow: 0 4px 12px rgba(45,106,79,0.08);
+        }
+        .live-snap-item .snap-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            line-height: 1.1;
+        }
+        .live-snap-item .snap-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .live-snap-item .snap-unit {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== CUSTOM LOADER (Analyze Now) ===== */
+        .analysis-loader-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 24px;
+        }
+        .analysis-loader-wrapper .loader-text {
+            color: #868e96;
+            font-size: 0.92rem;
+            animation: loaderTextPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes loaderTextPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .analysis-loader-wrapper .loader-progress {
+            width: 200px;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .analysis-loader-wrapper .loader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2d6a4f, #63FF00);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .loader {
+            --color-1: #fff;
+            --color-2: #63FF00;
+            --size: 1.55px;
+            transform: rotateZ(45deg);
+            perspective: calc(1000 * var(--size));
+            border-radius: 50%;
+            width: calc(48 * var(--size));
+            height: calc(48 * var(--size));
+            color: var(--color-1);
+            position: relative;
+        }
+        .loader:before,
+        .loader:after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: inherit;
+            height: inherit;
+            border-radius: 50%;
+            transform: rotateX(70deg);
+            animation: 1s spin linear infinite;
+        }
+        .loader:after {
+            color: var(--color-2);
+            transform: rotateY(70deg);
+            animation-delay: 0.4s;
+        }
+        @keyframes spin {
+            0%, 100% { box-shadow: 0.2em 0 0 0 currentcolor; }
+            12% { box-shadow: 0.2em 0.2em 0 0 currentcolor; }
+            25% { box-shadow: 0 0.2em 0 0 currentcolor; }
+            37% { box-shadow: -0.2em 0.2em 0 0 currentcolor; }
+            50% { box-shadow: -0.2em 0 0 0 currentcolor; }
+            62% { box-shadow: -0.2em -0.2em 0 0 currentcolor; }
+            75% { box-shadow: 0 -0.2em 0 0 currentcolor; }
+            87% { box-shadow: 0.2em -0.2em 0 0 currentcolor; }
+        }
+        .analysis-loader-bg {
+            background: linear-gradient(135deg, #1b4332, #2d6a4f);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(27,67,50,0.3);
+            animation: loaderBgPulse 2s ease-in-out infinite;
+        }
+        @keyframes loaderBgPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(27,67,50,0.3); }
+            50% { box-shadow: 0 8px 48px rgba(45,106,79,0.5); }
+        }
+
+        /* Staggered section animation */
+        .analysis-section[data-anim] {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .analysis-section[data-anim].visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Analysis stability badge */
+        .analysis-stability-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #d3f9d8;
+            color: #1b4332;
+        }
+        .analysis-stability-badge i {
+            color: #2b8a3e;
+        }
+
+        /* ===== SAVED ANALYSIS STYLES ===== */
+        .saved-analysis-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 14px;
+            transition: all 0.25s ease;
+            background: #fff;
+            position: relative;
+        }
+        .saved-analysis-card:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 4px 16px rgba(45,106,79,0.1);
+        }
+        .saved-analysis-card .sa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .saved-analysis-card .sa-date {
+            font-weight: 700;
+            color: var(--primary-green);
+            font-size: 0.9rem;
+        }
+        .saved-analysis-card .sa-yield {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-green);
+        }
+        .saved-analysis-card .sa-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .saved-analysis-card .sa-metric {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        .saved-analysis-card .sa-metric .sa-val { font-weight: 700; font-size: 0.95rem; color: var(--primary-green); }
+        .saved-analysis-card .sa-metric .sa-lbl { font-size: 0.7rem; color: #868e96; }
+        .saved-analysis-card .sa-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #f1f3f5;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #868e96;
+            transition: all 0.2s;
+        }
+        .saved-analysis-card .sa-delete:hover { background: #ffe3e3; color: #c92a2a; }
+
+        /* ===== CONFUSION MATRIX TABLE ===== */
+        .cm-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 3px;
+            font-size: 0.82rem;
+        }
+        .cm-table th {
+            background: var(--primary-green);
+            color: #fff;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+        .cm-table td {
+            padding: 10px 6px;
+            text-align: center;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .cm-table .cm-row-label {
+            background: #f1f3f5;
+            font-weight: 600;
+            color: #495057;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .cm-cell-diag { background: #d3f9d8; color: #1b4332; }
+        .cm-cell-off { background: #fff5f5; color: #c92a2a; }
+        .cm-cell-zero { background: #f8f9fa; color: #adb5bd; }
+        .f1-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .f1-badge.good { background: #d3f9d8; color: #1b4332; }
+        .f1-badge.warn { background: #fff3cd; color: #664d03; }
+        .btn-save-analysis {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-save-analysis:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+        }
+        .btn-save-analysis:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ===== INTERACTIVE CALENDAR STYLES ===== */
+        .cal-nav-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 14px;
+        }
+        .cal-nav-btn {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 0.95rem;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            padding: 0;
+            outline: none;
+        }
+        .cal-nav-btn * {
+            pointer-events: none;
+        }
+        .cal-nav-btn:hover {
+            background: #f0fdf4;
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+            transform: scale(1.08);
+            box-shadow: 0 2px 6px rgba(27,67,50,0.15);
+        }
+        .cal-nav-btn:active {
+            transform: scale(0.92);
+            background: #dcfce7;
+        }
+        .cal-nav-btn:focus-visible {
+            outline: 2px solid var(--primary-green);
+            outline-offset: 2px;
+        }
+        .cal-today-btn {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.15s ease;
+        }
+        .cal-today-btn:active {
+            transform: scale(0.94);
+        }
+        .cal-month-title {
+            letter-spacing: -0.3px;
+            user-select: none;
+        }
+        .cal-months-strip {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .cal-months-strip::-webkit-scrollbar {
+            height: 4px;
+        }
+        .cal-months-strip::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        .cal-m-pill {
+            flex: 1 0 auto;
+            min-width: 44px;
+            height: 36px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 6px;
+            border-radius: 8px;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-m-pill * {
+            pointer-events: none;
+        }
+        .cal-m-pill:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .cal-m-pill:active {
+            transform: scale(0.93);
+        }
+        .cal-m-pill.active {
+            background: var(--primary-green);
+            color: #ffffff;
+            border-color: var(--primary-green);
+            box-shadow: 0 2px 8px rgba(27,67,50,0.28);
+            font-weight: 700;
+        }
+        .cal-m-pill:focus-visible {
+            outline: 2px solid var(--primary-green);
+            outline-offset: 1px;
+        }
+        .cal-grid-wrapper {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .cal-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .cal-day-cell {
+            min-height: 44px;
+            height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            background: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            padding: 2px;
+        }
+        .cal-day-cell * {
+            pointer-events: none;
+        }
+        .cal-day-cell:hover:not(.other-month):not(:disabled) {
+            background: #f0fdf4;
+            border-color: #86efac;
+            transform: translateY(-1px);
+        }
+        .cal-day-cell:active:not(.other-month):not(:disabled) {
+            transform: scale(0.92);
+            background: #bbf7d0;
+        }
+        .cal-day-cell:focus-visible {
+            outline: 2px solid var(--primary-green);
+            outline-offset: 1px;
+        }
+        .cal-day-cell.other-month {
+            color: #cbd5e1;
+            cursor: default;
+            opacity: 0.55;
+        }
+        .cal-day-cell.today {
+            background: #dcfce7;
+            color: #166534;
+            font-weight: 800;
+            border-color: #86efac;
+            box-shadow: 0 0 0 1px #86efac inset;
+        }
+        .cal-day-cell.selected {
+            background: var(--primary-green) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(27,67,50,0.3);
+            font-weight: 800;
+        }
+        .cal-day-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #16a34a;
+            margin-top: 2px;
+        }
+        .cal-day-cell.selected .cal-day-dot {
+            background: #ffffff;
+        }
+        .cal-month-details {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .cal-crop-pill {
+            background: #ffffff;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.15s ease;
+        }
+        .cal-crop-pill:hover {
+            transform: translateY(-1px);
+            border-color: #10b981;
+            box-shadow: 0 3px 8px rgba(16,185,129,0.15);
+        }
+
+        /* ===== MOBILE HAMBURGER BUTTON ===== */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 10001;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary-green);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.35);
+            transition: all 0.25s ease;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-toggle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(27,67,50,0.45);
+        }
+        .sidebar-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== SIDEBAR BACKDROP (Mobile) ===== */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.show {
+            opacity: 1;
+        }
+
+        /* ===== RESPONSIVE: TABLET & BELOW (≤992px) ===== */
+        @media (max-width: 992px) {
+            /* --- GLOBAL / SIDEBAR --- */
+            .sidebar-toggle {
+                display: flex;
+            }
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 10000;
+                transform: translateX(-100%);
+                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: none;
+                width: 270px;
+                min-width: 270px;
+            }
+            #sidebar.open {
+                transform: translateX(0);
+                box-shadow: 8px 0 32px rgba(0,0,0,0.25);
+            }
+            .sidebar-backdrop.show {
+                display: block;
+            }
+            #main-content {
+                width: 100%;
+                padding: 20px 16px;
+                padding-top: 64px;
+            }
+
+            /* --- GLOBAL: Top bar & header flex stacking --- */
+            .tab-section .d-flex.justify-content-between.align-items-center.border-bottom,
+            .tab-section .d-flex.justify-content-between.align-items-center.mb-3.pb-2.border-bottom,
+            #main-content > .d-flex.justify-content-between.align-items-center.mb-3.pb-2.border-bottom {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px;
+            }
+
+            /* --- TAB 1: DASHBOARD --- */
+            .chart-container-fix {
+                height: 260px;
+            }
+            /* Scale down the big yield display */
+            #tab-dashboard .display-3 {
+                font-size: 2.8rem;
+            }
+
+            /* --- TAB 2: SOIL HEALTH --- */
+            /* Fertilizer efficiency row wraps nicely */
+            #tab-diagnostics .d-flex.justify-content-between.align-items-center {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            /* --- TAB 3: YIELD PREDICTION --- */
+            /* Remove the border-end on stacked layout */
+            #tab-prediction .col-12.col-md-5.border-end {
+                border-right: none !important;
+                border-bottom: 1px solid #e0e6e3;
+                padding-bottom: 20px;
+                margin-bottom: 16px;
+            }
+            #tab-prediction .display-3 {
+                font-size: 2.8rem;
+            }
+
+            /* --- TAB 4: SEASONAL GUIDE --- */
+            /* Season badge + title wrapping */
+            #tab-seasonal .card > .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px;
+            }
+            /* Calendar crop pills compact */
+            .cal-crop-pill {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+            /* Calendar detail advisory row */
+            .cal-month-details .border-start-md {
+                border-left: none !important;
+                padding-left: 0 !important;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 10px;
+                margin-top: 8px;
+            }
+
+            /* --- TAB 5: SENSOR LOGS --- */
+            #tab-logs .table th,
+            #tab-logs .table td {
+                padding: 8px 6px;
+                font-size: 0.82rem;
+                white-space: nowrap;
+            }
+
+            /* --- TAB 6: SAVED ANALYSIS --- */
+            #tab-saved_analysis .card > .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px;
+            }
+            .saved-analysis-card .sa-metrics {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            /* --- TAB 7: MANAGE DEVICE --- */
+            #tab-device .card {
+                max-width: 100% !important;
+            }
+
+            /* --- ANALYSIS MODAL --- */
+            .analysis-modal {
+                width: 95%;
+                max-height: 92vh;
+                border-radius: 14px;
+            }
+            .analysis-modal-header {
+                padding: 16px 18px 14px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .analysis-modal-body {
+                padding: 18px 16px 22px;
+            }
+            /* Modal compost + fertilizer side-by-side row */
+            .analysis-modal-body .row.g-3.mb-4 > .col-12.col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* ===== RESPONSIVE: MOBILE (≤576px) ===== */
+        @media (max-width: 576px) {
+            /* --- GLOBAL --- */
+            #main-content {
+                padding: 14px 10px;
+                padding-top: 60px;
+            }
+            #page-title {
+                font-size: 1.15rem;
+            }
+            /* All card padding reduction */
+            .card {
+                border-radius: 10px;
+                margin-bottom: 14px;
+            }
+            .card.p-4 {
+                padding: 14px !important;
+            }
+            /* Live indicator & date badge compact */
+            .live-indicator {
+                padding: 4px 10px;
+                font-size: 0.75rem;
+            }
+            #liveDateTime {
+                font-size: 0.72rem;
+                padding: 4px 8px !important;
+            }
+            /* Analyze button */
+            .btn-analyze {
+                padding: 6px 14px;
+                font-size: 0.82rem;
+            }
+            /* All h5 inside cards */
+            .tab-section .card h5 {
+                font-size: 1rem;
+            }
+
+            /* --- TAB 1: DASHBOARD --- */
+            /* Metric cards: always 2 columns */
+            .row.g-3.text-center.mb-4 > [class*="col-6"] {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+            .metric-card {
+                padding: 10px 8px !important;
+            }
+            .metric-card h3 {
+                font-size: 1.3rem;
+            }
+            .metric-card h6 {
+                font-size: 0.72rem;
+            }
+            /* Big yield number */
+            #tab-dashboard .display-3 {
+                font-size: 2.2rem;
+            }
+            /* Sensor trends chart */
+            .chart-container-fix {
+                height: 220px;
+            }
+            /* Prediction info box */
+            #tab-dashboard .p-3.bg-light.rounded.text-start.small.border {
+                font-size: 0.78rem;
+            }
+            #tab-dashboard .p-3.bg-light .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            /* --- TAB 2: SOIL HEALTH --- */
+            /* Nutrient list items */
+            #tab-diagnostics .list-group-item {
+                padding: 10px 12px;
+                font-size: 0.88rem;
+            }
+            /* Fertilizer efficiency section */
+            #tab-diagnostics .d-flex.justify-content-between.align-items-center {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 6px;
+            }
+            /* Compost score badge */
+            #tab-diagnostics .badge.fs-5 {
+                font-size: 1rem !important;
+            }
+            /* Compost factors grid — stack vertically */
+            #tab-diagnostics .row.g-2.mb-3.small .col-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            /* Compost guidance */
+            #tab-diagnostics .p-3.bg-light.border.rounded {
+                font-size: 0.82rem;
+            }
+
+            /* --- TAB 3: YIELD PREDICTION --- */
+            #tab-prediction .display-3 {
+                font-size: 2rem;
+            }
+            /* Remove border-end on mobile stacked column */
+            #tab-prediction .col-12.col-md-5.border-end {
+                border-right: none !important;
+                border-bottom: 1px solid #e0e6e3;
+                padding-bottom: 16px;
+                margin-bottom: 14px;
+            }
+            /* Optimization insights section */
+            #tab-prediction .p-3.border.rounded {
+                font-size: 0.82rem;
+            }
+            #tab-prediction .p-3.border.rounded h6 {
+                font-size: 0.88rem;
+            }
+
+            /* --- TAB 4: SEASONAL GUIDE --- */
+            /* Season summary row — stack */
+            #tab-seasonal .col-md-7,
+            #tab-seasonal .col-md-5 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            /* Calendar nav bar */
+            .cal-nav-bar {
+                padding: 6px 10px;
+            }
+            .cal-nav-btn {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                font-size: 0.9rem;
+            }
+            .cal-month-title {
+                font-size: 1.05rem !important;
+            }
+            /* Calendar grid cells */
+            .cal-day-cell {
+                min-height: 38px;
+                height: 38px;
+                font-size: 0.78rem;
+            }
+            .cal-weekdays {
+                font-size: 0.68rem;
+            }
+            /* Month quick-jump strip */
+            .cal-m-pill {
+                font-size: 0.72rem;
+                min-width: 40px;
+                height: 34px;
+                padding: 4px 3px;
+            }
+            /* Crop pills in calendar */
+            .cal-crop-pill {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+                gap: 4px;
+            }
+            .cal-crop-pill .badge {
+                font-size: 0.6rem !important;
+                padding: 2px 5px !important;
+            }
+            /* Calendar details advisory box */
+            .cal-month-details .row.g-2.small .col-md-7,
+            .cal-month-details .row.g-2.small .col-md-5 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .cal-month-details .border-start-md {
+                border-left: none !important;
+                padding-left: 0 !important;
+            }
+            /* Calendar top bar */
+            #tab-seasonal .d-flex.justify-content-between.align-items-center.flex-wrap {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 6px;
+            }
+            /* Harvest guide crop cards */
+            #harvesting-crops-container .col-12,
+            #harvesting-crops-container .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            /* --- TAB 5: SENSOR LOGS --- */
+            #tab-logs .table th,
+            #tab-logs .table td {
+                padding: 6px 5px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
+            .table-responsive {
+                font-size: 0.78rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* --- TAB 6: SAVED ANALYSIS --- */
+            #tab-saved_analysis .card > .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 8px;
+            }
+            .saved-analysis-card {
+                padding: 14px;
+            }
+            .saved-analysis-card .sa-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .saved-analysis-card .sa-yield {
+                font-size: 1.3rem;
+            }
+            .saved-analysis-card .sa-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            /* View Full Analysis button */
+            .saved-analysis-card .d-flex.justify-content-between.align-items-center.mt-2 {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 8px;
+            }
+            .saved-analysis-card .btn-outline-success {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* --- TAB 7: MANAGE DEVICE --- */
+            #tab-device .card {
+                max-width: 100% !important;
+            }
+            #tab-device .form-label {
+                font-size: 0.88rem;
+            }
+            #tab-device .btn {
+                width: 100%;
+            }
+
+            /* --- ANALYSIS MODAL --- */
+            .analysis-modal {
+                width: 98%;
+                border-radius: 12px;
+                max-height: 95vh;
+            }
+            .analysis-modal-header {
+                padding: 14px 14px 12px;
+            }
+            .analysis-modal-header h4 {
+                font-size: 1rem;
+            }
+            .analysis-modal-body {
+                padding: 14px 12px 18px;
+            }
+            /* Modal: Save Analysis button goes full width */
+            .btn-save-analysis {
+                width: 100%;
+                justify-content: center;
+            }
+            .analysis-modal-header .d-flex.align-items-center.gap-2 {
+                width: 100%;
+                flex-direction: column;
+            }
+            .analysis-modal-header .close-btn {
+                position: absolute;
+                top: 14px;
+                right: 14px;
+            }
+            /* Modal harvest card */
+            .analysis-harvest-card h1 {
+                font-size: 2.4rem;
+            }
+            .analysis-harvest-card .harvest-unit {
+                font-size: 1rem;
+            }
+            .analysis-harvest-card {
+                padding: 16px 14px;
+            }
+            .analysis-harvest-card .harvest-meta-pill {
+                font-size: 0.72rem;
+                padding: 4px 10px;
+            }
+            .analysis-harvest-card .harvest-meta {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            /* Modal nutrient bars */
+            .nutrient-bars {
+                grid-template-columns: 1fr;
+            }
+            /* Modal live snapshot grid */
+            .live-snapshot-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .live-snap-item {
+                padding: 10px 6px;
+            }
+            .live-snap-item .snap-value {
+                font-size: 1.1rem;
+            }
+            .live-snap-item .snap-label {
+                font-size: 0.68rem;
+            }
+            /* Modal compost + fertilizer row */
+            .analysis-modal-body .row.g-3.mb-4 > .col-12.col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            /* Modal seasonal advisory row */
+            .analysis-modal-body .row.g-2.mt-2 > .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            /* Modal timestamp banner */
+            .analysis-timestamp {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 8px;
+            }
+            .analysis-timestamp .badge {
+                font-size: 0.72rem !important;
+            }
+            /* Confusion matrix table scroll */
+            .cm-table {
+                font-size: 0.72rem;
+            }
+        }
+
+        /* ===== RESPONSIVE: VERY SMALL (≤400px) ===== */
+        @media (max-width: 400px) {
+            /* Even tighter for tiny phones */
+            #main-content {
+                padding: 10px 8px;
+                padding-top: 58px;
+            }
+            /* Dashboard yield */
+            #tab-dashboard .display-3 {
+                font-size: 1.8rem;
+            }
+            /* Prediction yield */
+            #tab-prediction .display-3 {
+                font-size: 1.6rem;
+            }
+            /* Live snapshot: 2 columns */
+            .live-snapshot-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            /* Saved analysis: 2 columns */
+            .saved-analysis-card .sa-metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+            /* Modal harvest number */
+            .analysis-harvest-card h1 {
+                font-size: 2rem;
+            }
+            /* Calendar cells comfortably sized for small screens */
+            .cal-day-cell {
+                min-height: 36px;
+                height: 36px;
+                font-size: 0.74rem;
+                padding: 1px;
+            }
+            .cal-day-dot {
+                width: 4px;
+                height: 4px;
+            }
+            .cal-m-pill {
+                min-width: 36px;
+                height: 32px;
+                font-size: 0.68rem;
+                padding: 2px 1px;
+            }
+            /* Metric cards */
+            .metric-card h3 {
+                font-size: 1.15rem;
+            }
+            .metric-card h6 {
+                font-size: 0.65rem;
+            }
+            /* Compost factors stay stacked */
+            #tab-diagnostics .row.g-2.mb-3.small .col-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
+
+<!-- Mobile Hamburger Toggle -->
+<button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+    <i class="bi bi-list" id="sidebar-toggle-icon"></i>
+</button>
+
+<!-- Sidebar Backdrop (Mobile) -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
 <div class="app-wrapper">
     <!-- Sidebar -->
@@ -171,6 +1582,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" onclick="switchTab('saved_analysis', this)">
+                    <i class="bi bi-bookmark-check me-2"></i> Saved Analysis
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" onclick="switchTab('device', this)">
                     <i class="bi bi-router me-2"></i> Manage Device
                 </a>
@@ -183,9 +1599,20 @@
 
     <!-- Main Content -->
     <div id="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-            <h4 class="fw-bold m-0" id="page-title">Soil Dashboard</h4>
-            <span class="badge badge-status p-2" id="liveDateTime">Loading...</span>
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <h4 class="fw-bold m-0" id="page-title">Soil Dashboard</h4>
+                <div class="live-indicator offline" id="live-status-indicator">
+                    <span class="live-dot"></span>
+                    <span id="live-status-text">Offline</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button class="btn-analyze" id="btn-analyze-now" onclick="openAnalysisModal()">
+                    <i class="bi bi-bar-chart-line"></i> Analyze Now
+                </button>
+                <span class="badge badge-status p-2" id="liveDateTime">Loading...</span>
+            </div>
         </div>
 
         <!-- Device Status Warning -->
@@ -196,71 +1623,296 @@
         <!-- TAB 1: DASHBOARD -->
         <div id="tab-dashboard" class="tab-section active-tab">
             <div class="row g-3 text-center mb-4">
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>Nitrogen</h6><h3 id="val-n" class="text-primary-green m-0">--</h3><small class="text-muted">mg/kg</small></div></div>
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>Phosphorus</h6><h3 id="val-p" class="text-primary-green m-0">--</h3><small class="text-muted">mg/kg</small></div></div>
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>Potassium</h6><h3 id="val-k" class="text-primary-green m-0">--</h3><small class="text-muted">mg/kg</small></div></div>
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>pH Level</h6><h3 id="val-ph" class="text-primary-green m-0">--</h3><small class="text-muted">pH</small></div></div>
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>Moisture</h6><h3 id="val-m" class="text-primary-green m-0">--</h3><small class="text-muted">%</small></div></div>
-                <div class="col-6 col-md-2"><div class="card p-3"><h6>Temperature</h6><h3 id="val-t" class="text-primary-green m-0">--</h3><small class="text-muted">°C</small></div></div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Nitrogen (N)</h6>
+                        <h3 id="val-n" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">mg/kg</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Phosphorus (P)</h6>
+                        <h3 id="val-p" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">mg/kg</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Potassium (K)</h6>
+                        <h3 id="val-k" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">mg/kg</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Soil pH</h6>
+                        <h3 id="val-ph" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">pH scale</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Moisture</h6>
+                        <h3 id="val-m" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">% VWC</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card p-3 metric-card">
+                        <h6 class="text-muted small mb-1">Temperature</h6>
+                        <h3 id="val-t" class="text-primary-green fw-bold m-0">--</h3>
+                        <small class="text-muted">°C</small>
+                    </div>
+                </div>
             </div>
 
             <div class="row g-4">
                 <div class="col-12 col-lg-7">
                     <div class="card p-4 h-100">
-                        <h5 class="fw-bold border-bottom pb-2">Soil Sensor Trends</h5>
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <h5 class="fw-bold m-0">Soil Sensor Trends</h5>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-broadcast text-success me-1"></i>Realtime Telemetry</span>
+                        </div>
                         <div class="chart-container-fix"><canvas id="sensorChart"></canvas></div>
                     </div>
                 </div>
                 <div class="col-12 col-lg-5">
-                    <div class="card p-4 h-100 text-center d-flex flex-column justify-content-center">
-                        <h5 class="fw-bold border-bottom pb-2">Expected Harvest</h5>
-                        <h1 class="display-3 text-primary-green fw-bold my-3"><span id="rf-yield">—</span> kg</h1>
-                        <p class="text-muted small mb-0">Estimated crop output based on current soil readings.</p>
+                    <div class="card p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold border-bottom pb-2">Expected Harvest</h5>
+                            <h1 class="display-3 text-primary-green fw-bold my-3"><span id="rf-yield">—</span> kg</h1>
+                            <p class="text-muted small mb-2">Estimated crop yield based on realtime soil sensor readings.</p>
+                        </div>
+                        <div class="p-3 bg-light rounded text-start small border">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Prediction Engine:</span>
+                                <strong>Random Forest (R² = 91.7%)</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Mean Error (MAE):</span>
+                                <strong>&plusmn;5.74 kg</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Optimization Potential:</span>
+                                <strong id="dash-potential" class="text-success">—</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 2: SOIL HEALTH -->
+        <!-- TAB 2: SOIL HEALTH, COMPOST MATURITY & FERTILIZER EFFECTIVENESS -->
         <div id="tab-diagnostics" class="tab-section">
-            <div class="card p-4">
-                <h5 class="fw-bold border-bottom pb-2">Soil Nutrient Status</h5>
-                <ul class="list-group list-group-flush mb-4">
-                    <li class="list-group-item d-flex justify-content-between">Nitrogen Level <span id="diag-n" class="fw-bold">--</span></li>
-                    <li class="list-group-item d-flex justify-content-between">Phosphorus Level <span id="diag-p" class="fw-bold">--</span></li>
-                    <li class="list-group-item d-flex justify-content-between">Potassium Level <span id="diag-k" class="fw-bold">--</span></li>
-                    <li class="list-group-item d-flex justify-content-between">pH Level <span id="diag-ph" class="fw-bold">--</span></li>
-                </ul>
-                <div class="p-3 bg-light border rounded mb-3"><strong>Fertilizer Recommendation:</strong> <span id="fert-guide">No Data</span></div>
-                <div class="p-3 bg-light border rounded"><strong>Compost Guidance:</strong> <span id="comp-guide">No Data</span></div>
+            <div class="row g-4">
+                <!-- Soil Nutrient Status -->
+                <div class="col-12 col-lg-6">
+                    <div class="card p-4 h-100">
+                        <h5 class="fw-bold border-bottom pb-2">Soil Nutrient Status</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Nitrogen Level</span>
+                                <span id="diag-n" class="badge bg-success">--</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Phosphorus Level</span>
+                                <span id="diag-p" class="badge bg-success">--</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Potassium Level</span>
+                                <span id="diag-k" class="badge bg-success">--</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Soil pH Level</span>
+                                <span id="diag-ph" class="badge bg-success">--</span>
+                            </li>
+                        </ul>
+
+                        <!-- Fertilizer Effectiveness & Recommendation -->
+                        <h6 class="fw-bold mt-3 text-primary-green"><i class="bi bi-lightning-charge me-1"></i> Fertilizer Effectiveness & Plan</h6>
+                        <div class="p-3 bg-light border rounded mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Nutrient Uptake Efficiency:</span>
+                                <span class="badge bg-primary fs-6" id="fert-efficiency">--%</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div id="fert-efficiency-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="small text-muted mb-2" id="fert-details">Analyzing soil bioavailability...</p>
+                            <div class="alert alert-secondary py-2 px-3 small mb-0">
+                                <strong>Prescription:</strong> <span id="fert-guide">No Data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compost Maturity Assessment -->
+                <div class="col-12 col-lg-6">
+                    <div class="card p-4 h-100">
+                        <h5 class="fw-bold border-bottom pb-2">Compost Maturity Assessment</h5>
+                        <div class="d-flex justify-content-between align-items-center my-3">
+                            <div>
+                                <h6 class="m-0 fw-bold" id="compost-stage-title">Assessing Compost...</h6>
+                                <small class="text-muted" id="compost-risk-badge">Phytotoxicity Risk: Evaluating</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success fs-5" id="compost-score-badge">--%</span>
+                                <div class="small text-muted">Maturity Score</div>
+                            </div>
+                        </div>
+
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div id="compost-score-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+
+                        <div class="row g-2 mb-3 small">
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <span class="text-muted">Temperature Phase:</span>
+                                    <div class="fw-bold" id="comp-factor-temp">--</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <span class="text-muted">Electrical Conductivity:</span>
+                                    <div class="fw-bold" id="comp-factor-ec">--</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <span class="text-muted">Compost pH Neutrality:</span>
+                                    <div class="fw-bold" id="comp-factor-ph">--</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <span class="text-muted">Humus Moisture Content:</span>
+                                    <div class="fw-bold" id="comp-factor-moist">--</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light border rounded">
+                            <strong>Compost Application Guidance:</strong>
+                            <p class="small mb-0 mt-1" id="comp-guide">No Data</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- TAB 3: YIELD PREDICTION -->
         <div id="tab-prediction" class="tab-section">
-            <div class="card p-4 text-center">
-                <h5 class="fw-bold border-bottom pb-2">Yield Prediction</h5>
-                <div class="my-4">
-                    <h2 class="display-4 fw-bold text-primary-green"><span id="rf-yield-2">—</span> kg</h2>
-                    <p class="text-muted mt-2">Estimated total harvest weight based on soil nutrients, pH, moisture, and temperature.</p>
-                    <p id="prediction-status" class="small text-muted" role="status" aria-live="polite">Waiting for live sensor readings.</p>
+            <div class="card p-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-5 text-center border-end">
+                        <h5 class="fw-bold border-bottom pb-2">Harvest Prediction</h5>
+                        <h2 class="display-3 fw-bold text-primary-green my-3"><span id="rf-yield-2">—</span> kg</h2>
+                        <p class="text-muted small">Estimated harvest weight based on realtime soil sensor readings.</p>
+                        <p id="prediction-status" class="small text-muted" role="status" aria-live="polite">Click <strong>Analyze Now</strong> to gather realtime analysis.</p>
+                    </div>
+                    <div class="col-12 col-md-7 ps-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="fw-bold mb-1"><i class="bi bi-bullseye text-success me-1"></i> Achievable Yield Potential: <span id="pred-potential" class="text-success fw-bold">— kg</span></h6>
+                            <p class="small text-muted mb-2">Yield attainable by remediating limiting soil factors:</p>
+                            <ul class="small mb-0 ps-3" id="pred-limiting-list">
+                                <li>Soil parameters in optimal balance.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 4: SEASONAL GUIDE -->
+        <!-- TAB 4: PHILIPPINE SEASONAL GUIDE (MONTH-BASED CALENDAR) -->
         <div id="tab-seasonal" class="tab-section">
             <div class="card p-4 mb-4">
-                <h5 class="fw-bold border-bottom pb-2">Current Season</h5>
-                <h4 class="text-primary-green fw-bold mt-2" id="season-title">Season</h4>
-                <p><strong>Recommended Crops:</strong> <span id="season-crops">--</span></p>
-                <p class="mb-0"><strong>Care Instructions:</strong> <span id="season-care">--</span></p>
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <div>
+                        <h5 class="fw-bold m-0"><i class="bi bi-calendar3-event me-2"></i>Philippine Cropping Calendar & Advisory</h5>
+                        <small class="text-muted">Based on Department of Agriculture & PAGASA Agro-meteorology — Month-by-Month Guide</small>
+                    </div>
+                    <span class="badge bg-success p-2 fs-6" id="season-title">Season</span>
+                </div>
+
+                <!-- Current Season Summary -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <div class="p-3 bg-light border rounded">
+                            <p class="mb-1"><strong><i class="bi bi-calendar-check me-1 text-success"></i> Current Month:</strong> <span id="current-month-display" class="fw-bold text-primary-green">--</span></p>
+                            <p class="mb-1"><strong>Season:</strong> <span id="season-type-display">--</span></p>
+                            <p class="mb-0"><strong>Care Advisory:</strong> <span id="season-care" class="small">--</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="p-3 bg-light border rounded small h-100 d-flex flex-column justify-content-center">
+                            <div class="fw-bold mb-1"><i class="bi bi-lightbulb text-warning me-1"></i> Cropping Strategy:</div>
+                            Plant resilient varieties suited for current moisture levels and prepare drainage or mulching based on seasonal rainfall.
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="card p-4">
-                <h5 class="fw-bold border-bottom pb-2">Recommended Crop Plots</h5>
-                <div id="crop-plots-container" class="mt-3">
-                    <p class="text-muted">Waiting for soil data to assign plots.</p>
+            <!-- Month-by-Month Planting Calendar (Interactive Calendar Style with < > navigation) -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-lg-7">
+                    <div class="card p-4 h-100">
+                        <!-- Calendar Top Bar -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom pb-2 mb-3">
+                            <h5 class="fw-bold m-0 text-primary-green">
+                                <i class="bi bi-calendar3 me-1"></i> 🌱 Monthly Planting Calendar
+                            </h5>
+                            <span id="cal-season-badge" class="badge rounded-pill px-3 py-2 fw-semibold"></span>
+                        </div>
+
+                        <!-- Calendar Navigation Bar: < > Month Year + Today Button -->
+                        <div class="cal-nav-bar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="cal-nav-btn" onclick="calPrevMonth()" title="Previous Month" aria-label="Previous Month">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button type="button" class="cal-nav-btn" onclick="calNextMonth()" title="Next Month" aria-label="Next Month">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                                <span class="cal-month-title fs-5 fw-bold text-dark ps-1" id="cal-month-title">October 2026</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-semibold cal-today-btn" onclick="calGoToday()" title="Jump to Today">
+                                <i class="bi bi-calendar-event me-1"></i> Today
+                            </button>
+                        </div>
+
+                        <!-- 12-Month Quick-Jump Strip -->
+                        <div class="cal-months-strip" id="cal-months-strip">
+                            <!-- Populated dynamically: Jan, Feb, Mar... -->
+                        </div>
+
+                        <!-- Interactive 7-Day Calendar Grid -->
+                        <div class="cal-grid-wrapper">
+                            <div class="cal-weekdays">
+                                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                            </div>
+                            <div class="cal-days-grid" id="cal-days-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Selected Month's Crop Recommendations & Agro-Advisory -->
+                        <div id="cal-month-details" class="cal-month-details">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <div class="card p-4 h-100">
+                        <h5 class="fw-bold border-bottom pb-2 text-warning-emphasis">
+                            <i class="bi bi-basket2-fill me-1"></i> 🌾 Harvest Guide This Season
+                        </h5>
+                        <p class="small text-muted">Crops reaching maturity this season and key harvest indicators:</p>
+                        <div id="harvesting-crops-container" class="mt-2">
+                            <p class="text-muted small">Loading harvesting guide...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -268,18 +1920,21 @@
         <!-- TAB 5: SENSOR LOGS -->
         <div id="tab-logs" class="tab-section">
             <div class="card p-4">
-                <h5 class="fw-bold border-bottom pb-2">Sensor Data History</h5>
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <h5 class="fw-bold m-0">Sensor Data History</h5>
+                    <span class="badge bg-light text-dark border">Calibrated Historical Readings</span>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle">
+                    <table class="table table-bordered table-hover align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>Timestamp</th>
-                                <th>Nitrogen</th>
-                                <th>Phosphorus</th>
-                                <th>Potassium</th>
+                                <th>Nitrogen (mg/kg)</th>
+                                <th>Phosphorus (mg/kg)</th>
+                                <th>Potassium (mg/kg)</th>
                                 <th>pH</th>
-                                <th>Moisture</th>
-                                <th>Temp</th>
+                                <th>Moisture (%)</th>
+                                <th>Temp (°C)</th>
                             </tr>
                         </thead>
                         <tbody id="logs-table-body">
@@ -290,7 +1945,28 @@
             </div>
         </div>
 
-        <!-- MANAGE DEVICE -->
+        <!-- TAB 6: SAVED ANALYSIS -->
+        <div id="tab-saved_analysis" class="tab-section">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <div>
+                        <h5 class="fw-bold m-0"><i class="bi bi-bookmark-check me-2"></i>Saved Analysis Reports</h5>
+                        <small class="text-muted">Permanent soil analysis records stored in MySQL Database — click to review</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearAllSavedAnalyses()">
+                        <i class="bi bi-trash3 me-1"></i> Clear All
+                    </button>
+                </div>
+                <div id="saved-analysis-list">
+                    <div class="text-center py-5">
+                        <i class="bi bi-bookmark" style="font-size:3rem;color:#ced4da"></i>
+                        <p class="mt-3 text-muted">No saved analyses yet. Click <strong>"Analyze Now"</strong> then <strong>"Save Analysis"</strong> to store a snapshot.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 7: MANAGE DEVICE -->
         <div id="tab-device" class="tab-section">
             <div class="card p-4" style="max-width:640px">
                 <h5 class="fw-bold border-bottom pb-2">Manage Device</h5>
@@ -322,6 +1998,28 @@
     </div>
 </div>
 
+<!-- Analysis Modal Overlay -->
+<div class="analysis-overlay" id="analysis-overlay" onclick="if(event.target===this)closeAnalysisModal()">
+    <div class="analysis-modal">
+        <div class="analysis-modal-header">
+            <h4 id="analysis-modal-title"><i class="bi bi-bar-chart-line"></i> Live Soil Analysis</h4>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn-save-analysis" id="btn-save-analysis" onclick="saveCurrentAnalysis()">
+                    <i class="bi bi-bookmark-plus"></i> Save Analysis
+                </button>
+                <button class="close-btn" onclick="closeAnalysisModal()" title="Close"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+        <div class="analysis-modal-body" id="analysis-modal-body">
+            <div class="analysis-loader-wrapper">
+                <div class="analysis-loader-bg"><div class="loader"></div></div>
+                <div class="loader-text">Initializing soil analysis engine...</div>
+                <div class="loader-progress"><div class="loader-progress-bar" id="analysis-progress-bar"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // System Clock
     setInterval(() => {
@@ -339,15 +2037,19 @@
         linkElement.classList.add('active');
         
         const titles = {
-            'device': 'Manage Device',
             'dashboard': 'Soil Dashboard',
-            'diagnostics': 'Soil Health',
+            'diagnostics': 'Soil Health & Compost Maturity',
             'prediction': 'Yield Prediction',
-            'seasonal': 'Seasonal Guide',
-            'logs': 'Sensor History'
+            'seasonal': 'Philippine Seasonal Guide (Itanim at Anihin)',
+            'logs': 'Sensor History',
+            'saved_analysis': 'Saved Analysis Reports',
+            'device': 'Manage Device'
         };
-        document.getElementById('page-title').innerText = titles[tabName];
+        document.getElementById('page-title').innerText = titles[tabName] || 'Dashboard';
         if (tabName === 'device') loadDeviceSettings();
+        if (tabName === 'saved_analysis') renderSavedAnalyses();
+        if (tabName === 'prediction') loadModelMetrics();
+        if (tabName === 'seasonal') renderInteractiveCalendar();
     }
 
     // Multi-Parameter Chart Setup
@@ -372,16 +2074,29 @@
     });
 
     let liveSensor = false, predictionBusy = false, nextPredictionAt = 0;
-    function setPrediction(value, message) {
+    function setPrediction(value, message, extra = null) {
         const display = Number.isFinite(value) ? value.toFixed(2) : '—';
         document.getElementById('rf-yield').textContent = display;
         document.getElementById('rf-yield-2').textContent = display;
         document.getElementById('prediction-status').textContent = message;
+
+        if (extra && extra.potential_kg) {
+            document.getElementById('dash-potential').textContent = extra.potential_kg.toFixed(2) + ' kg';
+            document.getElementById('pred-potential').textContent = extra.potential_kg.toFixed(2) + ' kg';
+        }
+        if (extra && extra.limiting_factors && extra.limiting_factors.length > 0) {
+            let limHtml = '';
+            extra.limiting_factors.forEach(item => {
+                limHtml += `<li><i class="bi bi-exclamation-triangle text-warning me-1"></i> ${item}</li>`;
+            });
+            document.getElementById('pred-limiting-list').innerHTML = limHtml;
+        }
     }
+
     async function refreshPrediction() {
         if (!liveSensor || predictionBusy || Date.now() < nextPredictionAt) return;
         predictionBusy = true;
-        document.getElementById('prediction-status').textContent = 'Calculating yield prediction…';
+        document.getElementById('prediction-status').textContent = 'Calculating yield prediction with Random Forest…';
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 22000);
         try {
@@ -389,7 +2104,7 @@
             const result = await response.json();
             if (!liveSensor) return;
             if (response.ok && result.ok && Number.isFinite(result.prediction_kg)) {
-                setPrediction(result.prediction_kg, 'Prediction updated.');
+                setPrediction(result.prediction_kg, 'Prediction updated with Random Forest Regressor.', result);
             } else {
                 setPrediction(null, result.message || 'Prediction unavailable. Check Python on the website computer.');
             }
@@ -397,8 +2112,9 @@
         } catch (error) {
             if (liveSensor) setPrediction(null, error.name === 'AbortError' ? 'Prediction took too long. Check Python on the website computer.' : 'Cannot read prediction. Check that prediction_api.php is installed.');
             nextPredictionAt = Date.now() + 30000;
-        } finally {clearTimeout(timer); predictionBusy = false;}
+        } finally { clearTimeout(timer); predictionBusy = false; }
     }
+
     let deviceCSRF = '', deviceSaving = false;
     async function loadDeviceSettings() {
         if (deviceSaving) return;
@@ -417,6 +2133,7 @@
             message.textContent = error.message || 'Cannot connect to ESP32.';
         }
     }
+
     document.getElementById('device-password-form').addEventListener('submit', async event => {
         event.preventDefault();
         if (deviceSaving) return;
@@ -433,12 +2150,514 @@
             const data = await response.json();
             if (!response.ok || !data.ok) throw Error(data.message || 'Password change failed.');
             saved = true; message.textContent = data.message;
-        } catch (error) {message.textContent = error.message || 'No confirmation received. Try reconnecting using the new password before retrying.';}
+        } catch (error) { message.textContent = error.message || 'No confirmation received. Try reconnecting using the new password before retrying.'; }
         finally {
             oldInput.value = ''; newInput.value = ''; confirmInput.value = '';
             deviceSaving = false; button.disabled = saved;
         }
     });
+
+    // ===== SAVED ANALYSIS (MySQL Database Storage) =====
+    const SA_KEY = 'treeco_saved_analyses';
+    let savedAnalysesCache = [];
+
+    async function loadSavedAnalysesFromDb() {
+        try {
+            const res = await fetch('saved_analysis_api.php', { cache: 'no-store' });
+            const json = await res.json();
+            if (json && json.ok && Array.isArray(json.analyses)) {
+                savedAnalysesCache = json.analyses;
+                try { localStorage.setItem(SA_KEY, JSON.stringify(savedAnalysesCache)); } catch {}
+                return savedAnalysesCache;
+            }
+        } catch (e) {
+            console.warn('Could not fetch saved analyses from database, using local cache:', e);
+        }
+        try {
+            savedAnalysesCache = JSON.parse(localStorage.getItem(SA_KEY) || '[]');
+        } catch {
+            savedAnalysesCache = [];
+        }
+        return savedAnalysesCache;
+    }
+
+    async function saveCurrentAnalysis() {
+        if (!lastAnalysisData || !lastAnalysisData.connected) {
+            alert('No live analysis data available to save. Please run "Analyze Now" first.');
+            return;
+        }
+        const d = lastAnalysisData;
+        const yieldVal = (d.prediction && d.prediction.ok && Number.isFinite(d.prediction.prediction_kg))
+            ? d.prediction.prediction_kg.toFixed(2)
+            : document.getElementById('rf-yield').textContent || '—';
+        const potentialVal = (d.prediction && d.prediction.ok && d.prediction.potential_kg)
+            ? d.prediction.potential_kg.toFixed(2) + ' kg'
+            : document.getElementById('dash-potential')?.textContent || '—';
+
+        const btn = document.getElementById('btn-save-analysis');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving to Database...';
+        }
+
+        const entry = {
+            yield_kg: yieldVal,
+            potential_kg: potentialVal,
+            telemetry: d.telemetry,
+            diagnostics: d.diagnostics,
+            compost_maturity: d.compost_maturity,
+            fertilizer_effectiveness: d.fertilizer_effectiveness,
+            analysis_status: d.analysis_status,
+            seasonality: d.seasonality,
+            prescriptions: d.prescriptions,
+            prediction: d.prediction
+        };
+
+        try {
+            const res = await fetch('saved_analysis_api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry)
+            });
+            const json = await res.json();
+            if (json && json.ok) {
+                entry.id = json.id;
+                entry.saved_at = new Date().toLocaleString('en-US', {
+                    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                savedAnalysesCache.unshift(entry);
+                try { localStorage.setItem(SA_KEY, JSON.stringify(savedAnalysesCache)); } catch {}
+
+                if (btn) {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved to Database!';
+                    btn.classList.add('btn-success');
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="bi bi-bookmark-plus"></i> Save Analysis';
+                        btn.classList.remove('btn-success');
+                        btn.disabled = false;
+                    }, 2200);
+                }
+            } else {
+                throw new Error(json.message || 'Database error');
+            }
+        } catch (err) {
+            console.error('Save to database failed:', err);
+            entry.id = Date.now();
+            entry.saved_at = new Date().toLocaleString('en-US', {
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            savedAnalysesCache.unshift(entry);
+            try { localStorage.setItem(SA_KEY, JSON.stringify(savedAnalysesCache)); } catch {}
+
+            if (btn) {
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved Locally';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="bi bi-bookmark-plus"></i> Save Analysis';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // If currently viewing saved analysis tab, refresh list
+        if (document.getElementById('tab-saved_analysis')?.classList.contains('active-tab')) {
+            renderSavedAnalyses();
+        }
+    }
+
+    async function deleteSavedAnalysis(id) {
+        if (!confirm('Are you sure you want to delete this saved analysis from the database?')) return;
+        try {
+            await fetch(`saved_analysis_api.php?action=delete&id=${encodeURIComponent(id)}`, { method: 'POST' });
+        } catch (e) {
+            console.warn('Database delete request failed:', e);
+        }
+        savedAnalysesCache = savedAnalysesCache.filter(a => Number(a.id) !== Number(id));
+        try { localStorage.setItem(SA_KEY, JSON.stringify(savedAnalysesCache)); } catch {}
+        renderSavedAnalyses();
+    }
+
+    async function clearAllSavedAnalyses() {
+        if (!confirm('Delete all saved analyses from the database? This cannot be undone.')) return;
+        try {
+            await fetch('saved_analysis_api.php?action=clear', { method: 'POST' });
+        } catch (e) {
+            console.warn('Database clear request failed:', e);
+        }
+        savedAnalysesCache = [];
+        try { localStorage.removeItem(SA_KEY); } catch {}
+        renderSavedAnalyses();
+    }
+
+    function getNutrientStatus(diagStr) {
+        if (!diagStr) {
+            return { label: 'Optimal', color: '#15803d', bg: '#dcfce7', border: '#86efac' };
+        }
+        if (diagStr.includes('Deficient') || diagStr.includes('Low')) {
+            return { label: diagStr, color: '#b45309', bg: '#fef3c7', border: '#fde68a' };
+        }
+        if (diagStr.includes('Excessive') || diagStr.includes('High')) {
+            return { label: diagStr, color: '#b91c1c', bg: '#fee2e2', border: '#fca5a5' };
+        }
+        return { label: diagStr, color: '#15803d', bg: '#dcfce7', border: '#86efac' };
+    }
+
+    function barPct(val, max) {
+        if (val == null || isNaN(val)) return 0;
+        return Math.min(100, Math.max(4, Math.round((Number(val) / max) * 100)));
+    }
+
+    function buildAnalysisReportHtml(data, opts = {}) {
+        const isSaved = !!opts.isSavedSnapshot;
+        const timestampText = opts.timestamp || new Date().toLocaleString('en-US', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        const t = data.telemetry || {};
+        const diag = data.diagnostics || {};
+        const cm = data.compost_maturity || {};
+        const fe = data.fertilizer_effectiveness || {};
+        const pred = data.prediction || {};
+        const season = data.seasonality || {};
+
+        const yieldVal = (data.yield_kg != null)
+            ? data.yield_kg
+            : (pred && pred.ok && Number.isFinite(pred.prediction_kg) ? pred.prediction_kg.toFixed(2) : '--');
+
+        const potentialVal = (data.potential_kg != null)
+            ? data.potential_kg
+            : (pred && pred.ok && pred.potential_kg ? pred.potential_kg.toFixed(2) + ' kg' : '—');
+
+        const nInfo = getNutrientStatus(diag.n);
+        const pInfo = getNutrientStatus(diag.p);
+        const kInfo = getNutrientStatus(diag.k);
+        const phInfo = getNutrientStatus(diag.ph);
+
+        // Limiting factors pills
+        let limPillsHtml = '';
+        if (pred && pred.limiting_factors && pred.limiting_factors.length > 0) {
+            pred.limiting_factors.forEach(f => {
+                limPillsHtml += `<div class="harvest-meta-pill border-warning-subtle text-dark"><i class="bi bi-exclamation-triangle-fill text-warning"></i> ${f}</div>`;
+            });
+        } else {
+            limPillsHtml = '<div class="harvest-meta-pill text-success border-success-subtle"><i class="bi bi-check-circle-fill text-success"></i> All soil parameters in optimal balance</div>';
+        }
+
+        const seasonMonth = season.month || (new Date().toLocaleString('en-US', { month: 'long' }));
+        const seasonName = season.season || 'Active Season';
+        const careText = season.care_instructions || 'Maintain optimal irrigation and balanced organic nutrient feeding.';
+
+        const plantCrops = season.crops_to_plant || [];
+        const harvestCrops = season.crops_to_harvest || [];
+
+        const plantBadges = plantCrops.length > 0
+            ? plantCrops.map(c => `<span class="badge crop-badge-plant px-2 py-1">${c.name || c}</span>`).join(' ')
+            : '<span class="text-muted small">No planting recommendations recorded</span>';
+
+        const harvestBadges = harvestCrops.length > 0
+            ? harvestCrops.map(c => `<span class="badge crop-badge-harvest px-2 py-1">${c.name || c}</span>`).join(' ')
+            : '<span class="text-muted small">No harvesting guidance recorded</span>';
+
+        return `
+            <!-- Top Timestamp & Season Banner -->
+            <div class="analysis-timestamp d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge ${isSaved ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-success-subtle text-success border border-success-subtle'} px-3 py-2 rounded-pill fw-semibold" style="font-size:0.82rem;">
+                        <i class="bi ${isSaved ? 'bi-bookmark-check-fill' : 'bi-broadcast'} me-1"></i>
+                        ${isSaved ? 'Historical Snapshot' : 'Realtime Sensor Analysis'}
+                    </span>
+                    <span class="text-secondary small"><i class="bi bi-clock me-1"></i>${timestampText}</span>
+                </div>
+                <div>
+                    <span class="badge px-3 py-2 rounded-pill fw-semibold" style="background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;font-size:0.82rem;">
+                        🌱 ${seasonMonth} — ${seasonName}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Expected Harvest -->
+            <div class="analysis-section visible mb-4" data-anim="1">
+                <div class="analysis-section-title"><i class="bi bi-graph-up-arrow"></i> Expected Harvest ${isSaved ? '(Saved Record)' : ''}</div>
+                <div class="analysis-harvest-card">
+                    <div class="harvest-title"><i class="bi bi-cpu me-1"></i> Random Forest Regressor Yield Prediction</div>
+                    <div class="harvest-number-row">
+                        <h1 id="modal-yield">${yieldVal}</h1>
+                        <span class="harvest-unit">kilograms</span>
+                    </div>
+                    <div class="harvest-meta">
+                        <div class="harvest-meta-pill">
+                            <i class="bi bi-bullseye text-success"></i>
+                            <span>Achievable Potential: <strong class="text-success">${potentialVal}</strong></span>
+                        </div>
+                        ${limPillsHtml}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Soil Nutrient Status (2x2 Grid) -->
+            <div class="analysis-section visible mb-4" data-anim="2">
+                <div class="analysis-section-title"><i class="bi bi-droplet-half"></i> Soil Nutrients & Diagnostics</div>
+                <div class="nutrient-bars">
+                    <!-- Nitrogen -->
+                    <div class="nutrient-bar-item">
+                        <div class="nb-header">
+                            <span class="nb-label"><i class="bi bi-circle-fill me-2" style="font-size:0.55rem;color:${nInfo.color}"></i>Nitrogen (N)</span>
+                            <span class="nb-badge" style="background:${nInfo.bg};color:${nInfo.color};border:1px solid ${nInfo.border};">${nInfo.label}</span>
+                        </div>
+                        <div class="nb-value-row">
+                            <div><span class="nb-val">${t.n ?? '--'}</span> <span class="nb-unit">mg/kg</span></div>
+                            <span class="small text-muted" style="font-size:0.75rem">Target: 150 - 250 mg/kg</span>
+                        </div>
+                        <div class="nb-track">
+                            <div class="nb-fill" id="nb-fill-n" style="width:${barPct(t.n, 300)}%;background:${nInfo.color}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Phosphorus -->
+                    <div class="nutrient-bar-item">
+                        <div class="nb-header">
+                            <span class="nb-label"><i class="bi bi-circle-fill me-2" style="font-size:0.55rem;color:${pInfo.color}"></i>Phosphorus (P)</span>
+                            <span class="nb-badge" style="background:${pInfo.bg};color:${pInfo.color};border:1px solid ${pInfo.border};">${pInfo.label}</span>
+                        </div>
+                        <div class="nb-value-row">
+                            <div><span class="nb-val">${t.p ?? '--'}</span> <span class="nb-unit">mg/kg</span></div>
+                            <span class="small text-muted" style="font-size:0.75rem">Target: 30 - 60 mg/kg</span>
+                        </div>
+                        <div class="nb-track">
+                            <div class="nb-fill" id="nb-fill-p" style="width:${barPct(t.p, 100)}%;background:${pInfo.color}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Potassium -->
+                    <div class="nutrient-bar-item">
+                        <div class="nb-header">
+                            <span class="nb-label"><i class="bi bi-circle-fill me-2" style="font-size:0.55rem;color:${kInfo.color}"></i>Potassium (K)</span>
+                            <span class="nb-badge" style="background:${kInfo.bg};color:${kInfo.color};border:1px solid ${kInfo.border};">${kInfo.label}</span>
+                        </div>
+                        <div class="nb-value-row">
+                            <div><span class="nb-val">${t.k ?? '--'}</span> <span class="nb-unit">mg/kg</span></div>
+                            <span class="small text-muted" style="font-size:0.75rem">Target: 150 - 300 mg/kg</span>
+                        </div>
+                        <div class="nb-track">
+                            <div class="nb-fill" id="nb-fill-k" style="width:${barPct(t.k, 400)}%;background:${kInfo.color}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Soil pH -->
+                    <div class="nutrient-bar-item">
+                        <div class="nb-header">
+                            <span class="nb-label"><i class="bi bi-circle-fill me-2" style="font-size:0.55rem;color:${phInfo.color}"></i>Soil pH</span>
+                            <span class="nb-badge" style="background:${phInfo.bg};color:${phInfo.color};border:1px solid ${phInfo.border};">${phInfo.label}</span>
+                        </div>
+                        <div class="nb-value-row">
+                            <div><span class="nb-val">${t.ph ?? '--'}</span> <span class="nb-unit">pH scale</span></div>
+                            <span class="small text-muted" style="font-size:0.75rem">Target: 6.0 - 7.0 pH</span>
+                        </div>
+                        <div class="nb-track">
+                            <div class="nb-fill" id="nb-fill-ph" style="width:${barPct(t.ph, 14)}%;background:${phInfo.color}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calibrated Telemetry Snapshot (7 Items) -->
+            <div class="analysis-section visible mb-4" data-anim="3">
+                <div class="analysis-section-title"><i class="bi bi-speedometer2"></i> Telemetry Parameters</div>
+                <div class="live-snapshot-grid">
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.n ?? '--'}</div>
+                        <div class="snap-label">Nitrogen</div>
+                        <div class="snap-unit">mg/kg</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.p ?? '--'}</div>
+                        <div class="snap-label">Phosphorus</div>
+                        <div class="snap-unit">mg/kg</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.k ?? '--'}</div>
+                        <div class="snap-label">Potassium</div>
+                        <div class="snap-unit">mg/kg</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.ph ?? '--'}</div>
+                        <div class="snap-label">Soil pH</div>
+                        <div class="snap-unit">pH scale</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.moisture ?? '--'}%</div>
+                        <div class="snap-label">Moisture</div>
+                        <div class="snap-unit">% VWC</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.soil_temp ?? '--'}°C</div>
+                        <div class="snap-label">Temperature</div>
+                        <div class="snap-unit">°C</div>
+                    </div>
+                    <div class="live-snap-item">
+                        <div class="snap-value">${t.ec ?? 0}</div>
+                        <div class="snap-label">EC</div>
+                        <div class="snap-unit">µS/cm</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compost Maturity & Fertilizer Effectiveness (Side by Side) -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="analysis-section visible mb-0" data-anim="4">
+                        <div class="analysis-section-title"><i class="bi bi-recycle"></i> Compost Maturity Assessment</div>
+                        <div class="p-3 bg-light border rounded h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong class="text-dark">${cm.stage || 'Active Decomposition'}</strong><br>
+                                    <small class="text-muted">Risk: ${cm.risk || 'Low Risk'}</small>
+                                </div>
+                                <span class="badge bg-success fs-6">${cm.score_pct || 0}%</span>
+                            </div>
+                            <div class="progress mb-2" style="height:8px">
+                                <div class="progress-bar bg-success" style="width:${cm.score_pct || 0}%"></div>
+                            </div>
+                            <small class="text-muted d-block">${cm.guide || 'Optimal compost decomposition parameters.'}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="analysis-section visible mb-0" data-anim="5">
+                        <div class="analysis-section-title"><i class="bi bi-lightning-charge"></i> Fertilizer Effectiveness & Plan</div>
+                        <div class="p-3 bg-light border rounded h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-dark fw-semibold">Nutrient Uptake Efficiency</span>
+                                <span class="badge bg-primary fs-6">${fe.efficiency_pct || 0}%</span>
+                            </div>
+                            <div class="progress mb-2" style="height:8px">
+                                <div class="progress-bar bg-primary" style="width:${fe.efficiency_pct || 0}%"></div>
+                            </div>
+                            <small class="text-muted d-block mb-1">${fe.details || 'Standard nutrient absorption rate.'}</small>
+                            <div class="alert alert-secondary py-2 px-3 small mb-0 mt-2">
+                                <strong>Prescription:</strong> ${fe.summary || data.prescriptions?.fertilizer || 'Balanced organic N-P-K maintenance.'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seasonal Advisory -->
+            <div class="analysis-section visible" data-anim="6">
+                <div class="analysis-section-title"><i class="bi bi-calendar3-event"></i> Seasonal Crop Advisory</div>
+                <div class="p-3 bg-light border rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>${seasonMonth} — ${seasonName}</strong><br>
+                            <small class="text-muted">${careText}</small>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold small text-success"><i class="bi bi-flower1 me-1"></i>Crops to Plant</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                ${plantBadges}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold small text-warning"><i class="bi bi-basket2-fill me-1"></i>Crops to Harvest</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                ${harvestBadges}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function viewSavedAnalysis(id) {
+        const item = savedAnalysesCache.find(a => Number(a.id) === Number(id));
+        if (!item) {
+            alert('Saved analysis record not found.');
+            return;
+        }
+
+        const overlay = document.getElementById('analysis-overlay');
+        const body = document.getElementById('analysis-modal-body');
+        const modalTitle = document.getElementById('analysis-modal-title');
+        const saveBtn = document.getElementById('btn-save-analysis');
+
+        if (modalTitle) {
+            modalTitle.innerHTML = '<i class="bi bi-database-check text-primary"></i> Saved Soil Analysis Record (MySQL)';
+        }
+
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bi bi-check2-all"></i> Stored in Database';
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.7';
+        }
+
+        body.innerHTML = buildAnalysisReportHtml(item, {
+            isSavedSnapshot: true,
+            timestamp: item.saved_at
+        });
+
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    async function renderSavedAnalyses() {
+        const container = document.getElementById('saved-analysis-list');
+        if (!container) return;
+        container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="mt-2 text-muted small">Loading saved analyses from database...</p></div>`;
+
+        const arr = await loadSavedAnalysesFromDb();
+        if (!arr || arr.length === 0) {
+            container.innerHTML = `<div class="text-center py-5"><i class="bi bi-database-slash" style="font-size:3rem;color:#ced4da"></i><p class="mt-3 text-muted">No saved analyses in database yet. Click <strong>"Analyze Now"</strong> then <strong>"Save Analysis"</strong> to store a permanent snapshot in MySQL.</p></div>`;
+            return;
+        }
+        let html = '';
+        arr.forEach(a => {
+            const t = a.telemetry || {};
+            const diag = a.diagnostics || {};
+            html += `
+            <div class="saved-analysis-card">
+                <button class="sa-delete" onclick="deleteSavedAnalysis(${a.id})" title="Delete from Database"><i class="bi bi-trash3"></i></button>
+                <div class="sa-header">
+                    <div>
+                        <div class="sa-date"><i class="bi bi-database-check text-success me-1"></i>${a.saved_at}</div>
+                        <small class="text-muted">${a.seasonality?.month || ''} — ${a.seasonality?.season || ''}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="sa-yield">${a.yield_kg} kg</div>
+                        <small class="text-muted">Predicted Yield</small>
+                    </div>
+                </div>
+                <div class="sa-metrics">
+                    <div class="sa-metric"><div class="sa-val">${t.n ?? '--'}</div><div class="sa-lbl">N (mg/kg)</div></div>
+                    <div class="sa-metric"><div class="sa-val">${t.p ?? '--'}</div><div class="sa-lbl">P (mg/kg)</div></div>
+                    <div class="sa-metric"><div class="sa-val">${t.k ?? '--'}</div><div class="sa-lbl">K (mg/kg)</div></div>
+                    <div class="sa-metric"><div class="sa-val">${t.ph ?? '--'}</div><div class="sa-lbl">pH</div></div>
+                    <div class="sa-metric"><div class="sa-val">${t.moisture ?? '--'}%</div><div class="sa-lbl">Moisture</div></div>
+                    <div class="sa-metric"><div class="sa-val">${t.soil_temp ?? '--'}°C</div><div class="sa-lbl">Temp</div></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                    <div class="d-flex gap-1 flex-wrap">
+                        ${['n','p','k','ph'].map(k => {
+                            const v = diag[k] || 'Optimal';
+                            const cls = v.includes('Deficient') ? 'bg-warning text-dark' : v.includes('Excessive') ? 'bg-danger' : 'bg-success';
+                            return `<span class="badge ${cls}">${k.toUpperCase()}: ${v}</span>`;
+                        }).join('')}
+                    </div>
+                    <button class="btn btn-sm btn-outline-success fw-bold" onclick="viewSavedAnalysis(${a.id})">
+                        <i class="bi bi-eye me-1"></i> View Full Analysis
+                    </button>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // ===== MODEL METRICS =====
+    async function loadModelMetrics() {}
 
     // Fetch API Data
     async function updateDashboard() {
@@ -449,21 +2668,27 @@
             const alertBox = document.getElementById('offline-alert');
             const statusBadge = document.getElementById('hw-status-badge');
 
+            // Live Indicator Update
+            const liveIndicator = document.getElementById('live-status-indicator');
+            const liveText = document.getElementById('live-status-text');
+
             // Handle Device Disconnection State
             if (!data.connected) {
                 alertBox.classList.remove('d-none');
                 statusBadge.innerText = 'Device Offline';
+                liveIndicator.className = 'live-indicator offline';
+                liveText.textContent = 'Offline';
                 liveSensor = false;
-                setPrediction(null, 'Waiting for live sensor readings.');
                 return;
             }
 
             alertBox.classList.add('d-none');
             statusBadge.innerText = 'Device Connected';
+            liveIndicator.className = 'live-indicator online';
+            liveText.textContent = 'Live';
             liveSensor = true;
-            refreshPrediction();
 
-            // Top Cards Update
+            // Top Cards Update (Realtime Telemetry)
             document.getElementById('val-n').innerText = data.telemetry.n;
             document.getElementById('val-p').innerText = data.telemetry.p;
             document.getElementById('val-k').innerText = data.telemetry.k;
@@ -471,41 +2696,74 @@
             document.getElementById('val-m').innerText = data.telemetry.moisture + '%';
             document.getElementById('val-t').innerText = data.telemetry.soil_temp + '°C';
 
-            // Soil Health Tab Update
+            // Realtime Yield Prediction Update (Reflects instantly without delay)
+            if (data.prediction_kg !== null && data.prediction_kg !== undefined && Number.isFinite(Number(data.prediction_kg))) {
+                setPrediction(Number(data.prediction_kg), 'Live realtime prediction active (Random Forest R² = 91.7%).', data);
+            }
+
+            // Soil Health Tab Diagnostics
             ['n', 'p', 'k', 'ph'].forEach(key => {
                 const el = document.getElementById(`diag-${key}`);
                 if (el) {
-                    el.innerText = data.diagnostics[key] || 'Normal';
+                    const val = data.diagnostics[key] || 'Optimal';
+                    el.innerText = val;
+                    el.className = val.includes('Deficient') ? 'badge bg-warning text-dark' : (val.includes('Excessive') ? 'badge bg-danger' : 'badge bg-success');
                 }
             });
 
+            // Fertilizer Effectiveness
+            if (data.fertilizer_effectiveness) {
+                const fe = data.fertilizer_effectiveness;
+                document.getElementById('fert-efficiency').innerText = `${fe.efficiency_pct}%`;
+                document.getElementById('fert-efficiency-bar').style.width = `${fe.efficiency_pct}%`;
+                document.getElementById('fert-details').innerText = fe.details;
+            }
             document.getElementById('fert-guide').innerText = data.prescriptions.fertilizer;
-            document.getElementById('comp-guide').innerText = data.prescriptions.compost;
 
-            // Prediction & Seasonality Tab Update
+            // Accurate Compost Maturity
+            if (data.compost_maturity) {
+                const cm = data.compost_maturity;
+                document.getElementById('compost-stage-title').innerText = cm.stage;
+                document.getElementById('compost-risk-badge').innerText = `Risk Level: ${cm.risk}`;
+                document.getElementById('compost-score-badge').innerText = `${cm.score_pct}%`;
+                document.getElementById('compost-score-bar').style.width = `${cm.score_pct}%`;
+                document.getElementById('comp-guide').innerText = cm.guide;
 
+                if (cm.factors) {
+                    document.getElementById('comp-factor-temp').innerText = `${cm.factors.temp.val}°C (${cm.factors.temp.status})`;
+                    document.getElementById('comp-factor-ec').innerText = `${cm.factors.ec.val} µS/cm (${cm.factors.ec.status})`;
+                    document.getElementById('comp-factor-ph').innerText = `pH ${cm.factors.ph.val} (${cm.factors.ph.status})`;
+                    document.getElementById('comp-factor-moist').innerText = `${cm.factors.moisture.val}% (${cm.factors.moisture.status})`;
+                }
+            } else {
+                document.getElementById('comp-guide').innerText = data.prescriptions.compost;
+            }
+
+            // Seasonal Guide Updates
             document.getElementById('season-title').innerText = data.seasonality.season;
-            document.getElementById('season-crops').innerText = data.seasonality.recommended_crops;
+            document.getElementById('current-month-display').innerText = data.seasonality.month;
+            document.getElementById('season-type-display').innerText = data.seasonality.season;
             document.getElementById('season-care').innerText = data.seasonality.care_instructions;
 
-            // Render Plot Recommendations
-            if (data.recommended_plots && data.recommended_plots.length > 0) {
-                let plotHtml = '<div class="row g-3">';
-                data.recommended_plots.forEach(item => {
-                    plotHtml += `
-                        <div class="col-md-6">
-                            <div class="p-3 border rounded bg-light">
-                                <span class="badge badge-status mb-2">${item.plot}</span>
-                                <h6 class="fw-bold m-0">${item.crop}</h6>
-                                <small class="text-muted">${item.status}</small>
+            // Render Harvesting List (🌾 Harvest Guide)
+            if (data.seasonality && data.seasonality.crops_to_harvest && data.seasonality.crops_to_harvest.length > 0) {
+                let harvestHtml = '<div class="row g-2">';
+                data.seasonality.crops_to_harvest.forEach(crop => {
+                    harvestHtml += `
+                        <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <span class="badge crop-badge-harvest mb-1"><i class="bi bi-check-circle me-1"></i> Harvest Ready</span>
+                                <h6 class="fw-bold mb-1">${crop.name}</h6>
+                                <small class="text-muted d-block">${crop.indicators}</small>
                             </div>
                         </div>`;
                 });
-                plotHtml += '</div>';
-                document.getElementById('crop-plots-container').innerHTML = plotHtml;
+                harvestHtml += '</div>';
+                const harvestContainer = document.getElementById('harvesting-crops-container');
+                if (harvestContainer) harvestContainer.innerHTML = harvestHtml;
             }
 
-            // Chart Update (6 Metrics)
+            // Chart Update (Realtime Telemetry)
             if (data.chart && data.chart.length > 0) {
                 const labels = [], nData = [], pData = [], kData = [], phData = [], mData = [], tData = [];
                 data.chart.forEach(row => {
@@ -548,8 +2806,631 @@
         } catch (err) { console.error("API Fetch Error:", err); }
     }
 
-    setInterval(updateDashboard, 2000);
+    setInterval(updateDashboard, 1500);
     updateDashboard();
+
+    // ===== ANALYSIS MODAL =====
+    let lastAnalysisData = null;
+    let analysisAnimating = false;
+
+    async function openAnalysisModal() {
+        if (analysisAnimating) return;
+        analysisAnimating = true;
+
+        const overlay = document.getElementById('analysis-overlay');
+        const body = document.getElementById('analysis-modal-body');
+        const analyzeBtn = document.getElementById('btn-analyze-now');
+
+        // Disable button during analysis
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<div class="loader" style="--size:0.6px;width:calc(24*var(--size));height:calc(24*var(--size))"></div> Analyzing...';
+
+        // Show modal with custom loader
+        const saveBtn = document.getElementById('btn-save-analysis');
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bi bi-bookmark-plus"></i> Save Analysis';
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('btn-success');
+        }
+
+        body.innerHTML = `
+            <div class="analysis-loader-wrapper">
+                <div class="analysis-loader-bg"><div class="loader"></div></div>
+                <div class="loader-text" id="loader-status-text">Initializing soil analysis engine...</div>
+                <div class="loader-progress"><div class="loader-progress-bar" id="analysis-progress-bar"></div></div>
+            </div>`;
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        // Animate progress bar + status text through snappy realtime stages
+        const loaderStages = [
+            { pct: 30, text: 'Connecting to sensor hardware...', delay: 60 },
+            { pct: 65, text: 'Receiving realtime sensor telemetry...', delay: 80 },
+            { pct: 90, text: 'Computing soil diagnostics & yield prediction...', delay: 80 }
+        ];
+
+        // Start both: loader animation + data fetching in parallel
+        const dataPromise = (async () => {
+            const [dashRes, predRes] = await Promise.allSettled([
+                fetch('dashboard_api.php', {cache: 'no-store'}).then(r => r.json()),
+                fetch('prediction_api.php', {cache: 'no-store'}).then(r => r.json()).catch(() => null)
+            ]);
+            return {
+                dashboard: dashRes.status === 'fulfilled' ? dashRes.value : null,
+                prediction: predRes.status === 'fulfilled' ? predRes.value : null
+            };
+        })();
+
+        // Run animated loader stages
+        const progressBar = document.getElementById('analysis-progress-bar');
+        const statusText = document.getElementById('loader-status-text');
+        for (const stage of loaderStages) {
+            await new Promise(r => setTimeout(r, stage.delay));
+            if (progressBar) progressBar.style.width = stage.pct + '%';
+            if (statusText) statusText.textContent = stage.text;
+        }
+
+        // Wait for data to finish
+        let fetchedData;
+        try {
+            fetchedData = await dataPromise;
+        } catch (err) {
+            body.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-exclamation-triangle" style="font-size:3rem;color:#e67700"></i>
+                    <p class="mt-3 text-muted">Failed to fetch data: ${err.message}</p>
+                </div>`;
+            analysisAnimating = false;
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="bi bi-bar-chart-line"></i> Analyze Now';
+            if (saveBtn) saveBtn.disabled = true;
+            return;
+        }
+
+        // Final progress
+        if (progressBar) progressBar.style.width = '100%';
+        if (statusText) statusText.textContent = 'Analysis complete!';
+        await new Promise(r => setTimeout(r, 60));
+
+        const data = fetchedData.dashboard;
+        const predData = fetchedData.prediction;
+        lastAnalysisData = data ? { ...data, prediction: predData } : null;
+
+        if (!data || !data.connected) {
+            body.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-wifi-off" style="font-size:3rem;color:#adb5bd"></i>
+                    <p class="mt-3 text-muted">Device is offline. Connect sensor to analyze.</p>
+                </div>`;
+            analysisAnimating = false;
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="bi bi-bar-chart-line"></i> Analyze Now';
+            if (saveBtn) saveBtn.disabled = true;
+            return;
+        }
+
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+        }
+
+        // Update main prediction displays if we got a result
+        if (predData && predData.ok && Number.isFinite(predData.prediction_kg)) {
+            setPrediction(predData.prediction_kg, 'Realtime prediction generated with Random Forest Regressor.', predData);
+        }
+
+        const yieldVal = (predData && predData.ok && Number.isFinite(predData.prediction_kg))
+            ? predData.prediction_kg.toFixed(2)
+            : document.getElementById('rf-yield').textContent;
+        const potentialVal = (predData && predData.ok && predData.potential_kg)
+            ? predData.potential_kg.toFixed(2) + ' kg'
+            : '—';
+        const now = new Date().toLocaleString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+
+        lastAnalysisData = {
+            ...data,
+            yield_kg: yieldVal,
+            potential_kg: potentialVal,
+            prediction: predData
+        };
+
+        const modalTitle = document.getElementById('analysis-modal-title');
+        if (modalTitle) {
+            modalTitle.innerHTML = '<i class="bi bi-bar-chart-line-fill text-success"></i> Realtime Soil Analysis Report';
+        }
+
+        body.innerHTML = buildAnalysisReportHtml(lastAnalysisData, {
+            isSavedSnapshot: false,
+            timestamp: now
+        });
+
+        // Staggered section reveal animation
+        const sections = body.querySelectorAll('[data-anim]');
+        sections.forEach((section, i) => {
+            setTimeout(() => section.classList.add('visible'), 80 * (i + 1));
+        });
+
+        // Restore button
+        analysisAnimating = false;
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '<i class="bi bi-bar-chart-line"></i> Analyze Now';
+    }
+
+    function closeAnalysisModal() {
+        const overlay = document.getElementById('analysis-overlay');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeAnalysisModal();
+    });
+
+    // ===== INTERACTIVE PHILIPPINE CROPPING CALENDAR =====
+    // Robust calendar state using explicit integer variables to eliminate Date rollover traps (e.g. 31st of month)
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth(); // 0 to 11 (0 = January)
+    let calSelectedDay = new Date().getDate();
+
+    const monthCropsData = {
+        0: {
+            name: 'January',
+            season: 'Cool Dry (Tag-lamig)',
+            seasonBadgeClass: 'bg-primary-subtle text-primary border border-primary-subtle',
+            climate: 'Low rainfall, cool night breeze (21–30°C). Ideal for high-value lowland vegetables.',
+            waterNeed: 'Moderate (irrigate every 2–3 days)',
+            strategy: 'Best window for brassicas and leafy greens. Guard against early morning dew fungal pests.',
+            crops: [
+                { name: 'Tomato (Kamatis)', type: 'Solanaceous', days: '60–80 days', ph: '6.0–6.8' },
+                { name: 'Pechay (Bok Choy)', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Cabbage (Repolyo)', type: 'Cole Crop', days: '75–90 days', ph: '6.0–6.8' },
+                { name: 'Bell Pepper (Sili)', type: 'Solanaceous', days: '65–80 days', ph: '6.0–6.8' },
+                { name: 'Lettuce', type: 'Leafy', days: '35–50 days', ph: '6.0–7.0' },
+                { name: 'Radish (Labanos)', type: 'Root Crop', days: '40–50 days', ph: '6.0–6.8' },
+                { name: 'Carrot', type: 'Root Crop', days: '70–90 days', ph: '6.0–6.8' },
+                { name: 'Onion (Sibuyas)', type: 'Bulb Crop', days: '90–120 days', ph: '6.0–7.0' }
+            ]
+        },
+        1: {
+            name: 'February',
+            season: 'Cool Dry (Tag-lamig)',
+            seasonBadgeClass: 'bg-primary-subtle text-primary border border-primary-subtle',
+            climate: 'Mild temperatures, dry sunny weather (22–31°C). Peak planting season for open field crops.',
+            waterNeed: 'Moderate (apply organic mulch to conserve moisture)',
+            strategy: 'Consistent irrigation produces optimal crispness in brassicas and sweetness in carrots.',
+            crops: [
+                { name: 'Tomato (Kamatis)', type: 'Solanaceous', days: '60–80 days', ph: '6.0–6.8' },
+                { name: 'Pechay', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Lettuce', type: 'Leafy', days: '35–50 days', ph: '6.0–7.0' },
+                { name: 'Radish (Labanos)', type: 'Root Crop', days: '40–50 days', ph: '6.0–6.8' },
+                { name: 'Cauliflower', type: 'Cole Crop', days: '70–85 days', ph: '6.0–6.8' },
+                { name: 'Broccoli', type: 'Cole Crop', days: '65–80 days', ph: '6.0–6.8' },
+                { name: 'Celery', type: 'Herb', days: '85–100 days', ph: '6.0–7.0' },
+                { name: 'Cabbage (Repolyo)', type: 'Cole Crop', days: '75–90 days', ph: '6.0–6.8' }
+            ]
+        },
+        2: {
+            name: 'March',
+            season: 'Hot Dry (Tag-araw)',
+            seasonBadgeClass: 'bg-danger-subtle text-danger border border-danger-subtle',
+            climate: 'Rising ambient temperatures (25–34°C), strong solar radiation, minimal precipitation.',
+            waterNeed: 'High (daily morning irrigation)',
+            strategy: 'Shift to drought-tolerant legumes and cucurbits. Apply thick straw mulch over root zones.',
+            crops: [
+                { name: 'Mungbean (Mongo)', type: 'Legume', days: '55–65 days', ph: '6.0–7.5' },
+                { name: 'Watermelon (Pakwan)', type: 'Cucurbit', days: '75–85 days', ph: '6.0–7.0' },
+                { name: 'Peanut (Mani)', type: 'Legume', days: '90–110 days', ph: '5.8–6.5' },
+                { name: 'Sweet Potato (Kamote)', type: 'Root Crop', days: '90–120 days', ph: '5.5–6.5' },
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Corn (Mais)', type: 'Cereal', days: '70–85 days', ph: '5.8–7.0' }
+            ]
+        },
+        3: {
+            name: 'April',
+            season: 'Hot Dry (Tag-araw)',
+            seasonBadgeClass: 'bg-danger-subtle text-danger border border-danger-subtle',
+            climate: 'Peak dry season heat (27–36°C), high evapotranspiration rates.',
+            waterNeed: 'Very High (deep root watering or drip)',
+            strategy: 'Ideal heat conditions for ripening melons and sun-loving legumes. Provide light shade for nurseries.',
+            crops: [
+                { name: 'Mungbean (Mongo)', type: 'Legume', days: '55–65 days', ph: '6.0–7.5' },
+                { name: 'Watermelon (Pakwan)', type: 'Cucurbit', days: '75–85 days', ph: '6.0–7.0' },
+                { name: 'Melon (Kantalupo)', type: 'Cucurbit', days: '70–80 days', ph: '6.0–7.0' },
+                { name: 'Peanut (Mani)', type: 'Legume', days: '90–110 days', ph: '5.8–6.5' },
+                { name: 'Sweet Potato (Kamote)', type: 'Root Crop', days: '90–120 days', ph: '5.5–6.5' },
+                { name: 'Corn (Mais)', type: 'Cereal', days: '70–85 days', ph: '5.8–7.0' }
+            ]
+        },
+        4: {
+            name: 'May',
+            season: 'Hot Dry / Pre-Monsoon',
+            seasonBadgeClass: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            climate: 'High temperatures with early thunderstorm showers (26–34°C). Transition into wet season.',
+            waterNeed: 'Moderate to High',
+            strategy: 'Prepare seedling beds and incorporate compost into plots before heavy rains commence.',
+            crops: [
+                { name: 'Sweet Potato (Kamote)', type: 'Root Crop', days: '90–120 days', ph: '5.5–6.5' },
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Corn (Mais)', type: 'Cereal', days: '70–85 days', ph: '5.8–7.0' },
+                { name: 'Upland Rice', type: 'Cereal', days: '110–130 days', ph: '5.5–6.5' },
+                { name: 'Okra (Lady Finger)', type: 'Malvaceae', days: '50–60 days', ph: '6.0–6.8' },
+                { name: 'Mungbean (Mongo)', type: 'Legume', days: '55–65 days', ph: '6.0–7.5' }
+            ]
+        },
+        5: {
+            name: 'June',
+            season: 'Wet Season (Tag-ulan)',
+            seasonBadgeClass: 'bg-success-subtle text-success border border-success-subtle',
+            climate: 'Southwest Monsoon onset (Habagat), frequent rainfall, high humidity (25–32°C).',
+            waterNeed: 'Natural rainfall (focus on drainage)',
+            strategy: 'Raise garden beds 20–30 cm above ground level. Build trellises for cucurbits and beans.',
+            crops: [
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Sitao (Yardlong Bean)', type: 'Legume', days: '50–65 days', ph: '5.5–6.8' },
+                { name: 'Ampalaya (Bitter Gourd)', type: 'Cucurbit', days: '60–75 days', ph: '6.0–6.8' },
+                { name: 'Kangkong (Water Spinach)', type: 'Leafy', days: '25–35 days', ph: '5.5–7.0' },
+                { name: 'Okra', type: 'Malvaceae', days: '50–60 days', ph: '6.0–6.8' },
+                { name: 'Squash (Kalabasa)', type: 'Cucurbit', days: '85–100 days', ph: '6.0–7.0' },
+                { name: 'Rice (Palay)', type: 'Cereal', days: '115–130 days', ph: '5.5–6.5' }
+            ]
+        },
+        6: {
+            name: 'July',
+            season: 'Wet Season (Tag-ulan)',
+            seasonBadgeClass: 'bg-success-subtle text-success border border-success-subtle',
+            climate: 'Continuous monsoonal rains and overcast days (24–31°C). Saturated soil conditions.',
+            waterNeed: 'Natural rainfall (clear runoff trenches)',
+            strategy: 'Plant water-loving vegetables. Provide good row ventilation to prevent leaf blights.',
+            crops: [
+                { name: 'Kangkong', type: 'Leafy', days: '25–35 days', ph: '5.5–7.0' },
+                { name: 'Sitao', type: 'Legume', days: '50–65 days', ph: '5.5–6.8' },
+                { name: 'Okra', type: 'Malvaceae', days: '50–60 days', ph: '6.0–6.8' },
+                { name: 'Rice (Palay)', type: 'Cereal', days: '115–130 days', ph: '5.5–6.5' },
+                { name: 'Squash (Kalabasa)', type: 'Cucurbit', days: '85–100 days', ph: '6.0–7.0' },
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Ampalaya', type: 'Cucurbit', days: '60–75 days', ph: '6.0–6.8' }
+            ]
+        },
+        7: {
+            name: 'August',
+            season: 'Wet Season (Tag-ulan)',
+            seasonBadgeClass: 'bg-success-subtle text-success border border-success-subtle',
+            climate: 'Peak tropical cyclone and monsoon frequency (24–30°C). Abundant precipitation.',
+            waterNeed: 'Excess rainfall (monitor field drainage)',
+            strategy: 'Support standing vines with sturdy bamboo stakes. Harvest fast-growing leafy crops continuously.',
+            crops: [
+                { name: 'Kangkong', type: 'Leafy', days: '25–35 days', ph: '5.5–7.0' },
+                { name: 'Sitao', type: 'Legume', days: '50–65 days', ph: '5.5–6.8' },
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Ampalaya', type: 'Cucurbit', days: '60–75 days', ph: '6.0–6.8' },
+                { name: 'String Beans', type: 'Legume', days: '50–60 days', ph: '5.5–6.8' },
+                { name: 'Rice (Palay)', type: 'Cereal', days: '115–130 days', ph: '5.5–6.5' },
+                { name: 'Squash (Kalabasa)', type: 'Cucurbit', days: '85–100 days', ph: '6.0–7.0' }
+            ]
+        },
+        8: {
+            name: 'September',
+            season: 'Wet Season (Tag-ulan)',
+            seasonBadgeClass: 'bg-success-subtle text-success border border-success-subtle',
+            climate: 'Late monsoon showers with increasing sunny intervals (25–31°C).',
+            waterNeed: 'Moderate rainfall',
+            strategy: 'Start sowing tomato and pepper seeds in protected nursery trays for the upcoming dry season.',
+            crops: [
+                { name: 'Pechay', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Kangkong', type: 'Leafy', days: '25–35 days', ph: '5.5–7.0' },
+                { name: 'Sitao', type: 'Legume', days: '50–65 days', ph: '5.5–6.8' },
+                { name: 'Okra', type: 'Malvaceae', days: '50–60 days', ph: '6.0–6.8' },
+                { name: 'Ampalaya', type: 'Cucurbit', days: '60–75 days', ph: '6.0–6.8' },
+                { name: 'Rice (Palay)', type: 'Cereal', days: '115–130 days', ph: '5.5–6.5' },
+                { name: 'Tomato Seedling', type: 'Nursery', days: '25–30 days', ph: '6.0–6.8' }
+            ]
+        },
+        9: {
+            name: 'October',
+            season: 'Late Wet / Transition',
+            seasonBadgeClass: 'bg-success-subtle text-success border border-success-subtle',
+            climate: 'Rains taper off, Amihan winds approach. Optimal soil warmth and moisture (24–31°C).',
+            waterNeed: 'Moderate',
+            strategy: 'Prime transition month! Transplant seedlings into field beds and establish quick-cycle pechay.',
+            crops: [
+                { name: 'Tomato (Kamatis)', type: 'Solanaceous', days: '60–80 days', ph: '6.0–6.8' },
+                { name: 'Pechay', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Eggplant (Talong)', type: 'Solanaceous', days: '60–80 days', ph: '5.8–6.8' },
+                { name: 'Kangkong', type: 'Leafy', days: '25–35 days', ph: '5.5–7.0' },
+                { name: 'Ampalaya', type: 'Cucurbit', days: '60–75 days', ph: '6.0–6.8' },
+                { name: 'Sweet Pepper', type: 'Solanaceous', days: '65–80 days', ph: '6.0–6.8' },
+                { name: 'Rice (Palay)', type: 'Cereal', days: '115–130 days', ph: '5.5–6.5' }
+            ]
+        },
+        10: {
+            name: 'November',
+            season: 'Cool Dry (Tag-lamig)',
+            seasonBadgeClass: 'bg-primary-subtle text-primary border border-primary-subtle',
+            climate: 'Northeast Monsoon (Amihan) active. Cool morning winds, sunny afternoons (23–30°C).',
+            waterNeed: 'Moderate (consistent schedule)',
+            strategy: 'Launch main commercial vegetable planting. Excellent conditions for onions, garlic, and cabbage.',
+            crops: [
+                { name: 'Tomato (Kamatis)', type: 'Solanaceous', days: '60–80 days', ph: '6.0–6.8' },
+                { name: 'Cabbage (Repolyo)', type: 'Cole Crop', days: '75–90 days', ph: '6.0–6.8' },
+                { name: 'Pechay', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Bell Pepper', type: 'Solanaceous', days: '65–80 days', ph: '6.0–6.8' },
+                { name: 'Lettuce', type: 'Leafy', days: '35–50 days', ph: '6.0–7.0' },
+                { name: 'Radish (Labanos)', type: 'Root Crop', days: '40–50 days', ph: '6.0–6.8' },
+                { name: 'Onion (Sibuyas)', type: 'Bulb Crop', days: '90–120 days', ph: '6.0–7.0' }
+            ]
+        },
+        11: {
+            name: 'December',
+            season: 'Cool Dry (Tag-lamig)',
+            seasonBadgeClass: 'bg-primary-subtle text-primary border border-primary-subtle',
+            climate: 'Coolest and crispest climate across Luzon & Visayas (21–29°C), low rainfall.',
+            waterNeed: 'Moderate (irrigate in mornings)',
+            strategy: 'Peak growing conditions for all vegetables. Maintain steady fertilization and weed control.',
+            crops: [
+                { name: 'Tomato (Kamatis)', type: 'Solanaceous', days: '60–80 days', ph: '6.0–6.8' },
+                { name: 'Cabbage (Repolyo)', type: 'Cole Crop', days: '75–90 days', ph: '6.0–6.8' },
+                { name: 'Pechay', type: 'Leafy', days: '30–45 days', ph: '5.5–6.5' },
+                { name: 'Lettuce', type: 'Leafy', days: '35–50 days', ph: '6.0–7.0' },
+                { name: 'Carrot', type: 'Root Crop', days: '70–90 days', ph: '6.0–6.8' },
+                { name: 'Garlic (Bawang)', type: 'Bulb Crop', days: '90–110 days', ph: '6.0–7.0' },
+                { name: 'Onion (Sibuyas)', type: 'Bulb Crop', days: '90–120 days', ph: '6.0–7.0' }
+            ]
+        }
+    };
+
+    function renderInteractiveCalendar() {
+        const info = monthCropsData[calMonth];
+        if (!info) return;
+        const today = new Date();
+        const curYear = today.getFullYear();
+        const curMonth = today.getMonth();
+        const curDate = today.getDate();
+
+        // Clamp selected day to month's total days
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        if (calSelectedDay > daysInMonth) {
+            calSelectedDay = daysInMonth;
+        }
+
+        // 1. Update Title & Badges
+        const titleEl = document.getElementById('cal-month-title');
+        if (titleEl) titleEl.textContent = `${info.name} ${calYear}`;
+
+        const seasonBadge = document.getElementById('cal-season-badge');
+        if (seasonBadge) {
+            seasonBadge.className = `badge rounded-pill px-3 py-2 fw-semibold ${info.seasonBadgeClass}`;
+            seasonBadge.innerHTML = `<i class="bi bi-cloud-sun me-1"></i> ${info.season}`;
+        }
+
+        // 2. Update Month Quick-Jump Pills (semantic buttons with instant feedback & auto-scroll)
+        const stripEl = document.getElementById('cal-months-strip');
+        if (stripEl) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            stripEl.innerHTML = monthNames.map((m, idx) => `
+                <button type="button"
+                        class="cal-m-pill ${idx === calMonth ? 'active' : ''}"
+                        data-midx="${idx}"
+                        onclick="calSelectMonth(${idx})"
+                        aria-label="View ${m}">
+                    ${m}
+                </button>
+            `).join('');
+
+            // Smoothly center active month pill if strip is scrollable
+            const activePill = stripEl.querySelector('.cal-m-pill.active');
+            if (activePill && typeof activePill.scrollIntoView === 'function') {
+                try {
+                    activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } catch (e) {}
+            }
+        }
+
+        // 3. Generate Calendar Grid (semantic buttons with data-day attribute)
+        const gridEl = document.getElementById('cal-days-grid');
+        if (gridEl) {
+            const firstDayIndex = new Date(calYear, calMonth, 1).getDay(); // 0 = Sun
+            const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
+
+            let cellsHtml = '';
+
+            // Previous month filler days (disabled)
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                cellsHtml += `<button type="button" class="cal-day-cell other-month" disabled tabindex="-1" aria-hidden="true">${dayNum}</button>`;
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = (day === curDate && calMonth === curMonth && calYear === curYear);
+                const isSelected = (day === calSelectedDay);
+                cellsHtml += `
+                    <button type="button"
+                            class="cal-day-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+                            data-day="${day}"
+                            onclick="calSelectDay(${day})"
+                            aria-label="${info.name} ${day}, ${calYear}${isToday ? ' (Today)' : ''}"
+                            aria-pressed="${isSelected ? 'true' : 'false'}">
+                        <span>${day}</span>
+                        <span class="cal-day-dot"></span>
+                    </button>
+                `;
+            }
+
+            // Next month filler days to complete rows (multiple of 7)
+            const totalRendered = firstDayIndex + daysInMonth;
+            const remainder = totalRendered % 7;
+            if (remainder !== 0) {
+                const fillerNeeded = 7 - remainder;
+                for (let nextDay = 1; nextDay <= fillerNeeded; nextDay++) {
+                    cellsHtml += `<button type="button" class="cal-day-cell other-month" disabled tabindex="-1" aria-hidden="true">${nextDay}</button>`;
+                }
+            }
+
+            gridEl.innerHTML = cellsHtml;
+        }
+
+        // 4. Update Selected Month's Crop Details & Agro-Advisory
+        renderCalendarDetails(info);
+    }
+
+    function renderCalendarDetails(info) {
+        const detailsEl = document.getElementById('cal-month-details');
+        if (!detailsEl) return;
+        detailsEl.innerHTML = `
+            <div class="mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
+                    <span class="fw-bold text-dark small">
+                        <i class="bi bi-flower1 text-success me-1"></i> Recommended Crops to Plant in ${info.name}:
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" id="cal-selected-badge" style="font-size:0.75rem;">
+                        <i class="bi bi-calendar-check me-1"></i> Selected: <strong id="cal-selected-str">${info.name} ${calSelectedDay}, ${calYear}</strong>
+                    </span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    ${info.crops.map(c => `
+                        <div class="cal-crop-pill">
+                            <span class="fw-bold text-success">${c.name}</span>
+                            <span class="badge bg-light text-secondary border" style="font-size:0.7rem">${c.type}</span>
+                            <span class="text-muted small" style="font-size:0.72rem">⏱️ ${c.days}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="p-2 px-3 bg-white border rounded">
+                <div class="row g-2 small">
+                    <div class="col-md-7">
+                        <strong class="text-primary-green"><i class="bi bi-geo-alt me-1"></i>DA Climate Advisory:</strong>
+                        <p class="mb-0 text-muted" style="font-size:0.78rem">${info.climate} ${info.strategy}</p>
+                    </div>
+                    <div class="col-md-5 border-start-md ps-md-3">
+                        <strong class="text-dark"><i class="bi bi-droplet-half text-info me-1"></i>Water Need:</strong>
+                        <p class="mb-0 text-muted" style="font-size:0.78rem">${info.waterNeed}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function calPrevMonth() {
+        calMonth--;
+        if (calMonth < 0) {
+            calMonth = 11;
+            calYear--;
+        }
+        const maxDays = new Date(calYear, calMonth + 1, 0).getDate();
+        if (calSelectedDay > maxDays) calSelectedDay = maxDays;
+        renderInteractiveCalendar();
+    }
+
+    function calNextMonth() {
+        calMonth++;
+        if (calMonth > 11) {
+            calMonth = 0;
+            calYear++;
+        }
+        const maxDays = new Date(calYear, calMonth + 1, 0).getDate();
+        if (calSelectedDay > maxDays) calSelectedDay = maxDays;
+        renderInteractiveCalendar();
+    }
+
+    function calGoToday() {
+        const now = new Date();
+        calYear = now.getFullYear();
+        calMonth = now.getMonth();
+        calSelectedDay = now.getDate();
+        renderInteractiveCalendar();
+    }
+
+    function calSelectMonth(mIdx) {
+        if (mIdx < 0 || mIdx > 11) return;
+        calMonth = mIdx;
+        const maxDays = new Date(calYear, calMonth + 1, 0).getDate();
+        if (calSelectedDay > maxDays) calSelectedDay = maxDays;
+        renderInteractiveCalendar();
+    }
+
+    function calSelectDay(day) {
+        calSelectedDay = day;
+        // Fast in-place class toggle: avoids tearing down and rebuilding the DOM tree
+        const gridEl = document.getElementById('cal-days-grid');
+        if (gridEl) {
+            const cells = gridEl.querySelectorAll('.cal-day-cell:not(.other-month)');
+            cells.forEach(cell => {
+                const cellDay = parseInt(cell.getAttribute('data-day'), 10);
+                if (cellDay === day) {
+                    cell.classList.add('selected');
+                    cell.setAttribute('aria-pressed', 'true');
+                } else {
+                    cell.classList.remove('selected');
+                    cell.setAttribute('aria-pressed', 'false');
+                }
+            });
+        }
+        const info = monthCropsData[calMonth];
+        const strEl = document.getElementById('cal-selected-str');
+        if (strEl && info) {
+            strEl.textContent = `${info.name} ${day}, ${calYear}`;
+        }
+    }
+
+    // Initialize calendar on load
+    document.addEventListener('DOMContentLoaded', () => {
+        renderInteractiveCalendar();
+    });
+    // Also trigger immediately in case DOMContentLoaded already fired
+    renderInteractiveCalendar();
+
+    // ===== MOBILE SIDEBAR TOGGLE =====
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const icon = document.getElementById('sidebar-toggle-icon');
+        const isOpen = sidebar.classList.contains('open');
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            sidebar.classList.add('open');
+            backdrop.classList.add('show');
+            // Small delay so display:block is applied before opacity transition
+            requestAnimationFrame(() => { backdrop.style.display = 'block'; requestAnimationFrame(() => backdrop.classList.add('show')); });
+            icon.className = 'bi bi-x-lg';
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const icon = document.getElementById('sidebar-toggle-icon');
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+        setTimeout(() => { backdrop.style.display = 'none'; }, 300);
+        icon.className = 'bi bi-list';
+    }
+
+    // Close sidebar when a nav link is clicked (mobile)
+    document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                closeSidebar();
+            }
+        });
+    });
+
+    // Close sidebar on window resize above breakpoint
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992) {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('show');
+            backdrop.style.display = 'none';
+            document.getElementById('sidebar-toggle-icon').className = 'bi bi-list';
+        }
+    });
 </script>
 </body>
 </html>

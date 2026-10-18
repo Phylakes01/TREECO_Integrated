@@ -1,0 +1,79 @@
+{
+    "model_name": "Treeco Random Forest Regressor",
+    "trained_at": "2026-10-18 03:39:52",
+    "sample_count": 2500,
+    "r2_score": 0.9169,
+    "r2_percentage": 91.69,
+    "r2_train": 0.9877,
+    "mae_kg": 5.74,
+    "rmse_kg": 7.21,
+    "cv_r2_mean": 0.9206,
+    "cv_r2_std": 0.0069,
+    "feature_importances": {
+        "N": 0.0848,
+        "P": 0.0341,
+        "K": 0.0261,
+        "pH": 0.3777,
+        "Moisture": 0.3342,
+        "Temp": 0.143
+    },
+    "accuracy_rating": "High Accuracy",
+    "classification": {
+        "categories": [
+            "Low Yield",
+            "Medium Yield",
+            "High Yield"
+        ],
+        "bin_edges": [
+            0,
+            60,
+            100,
+            999
+        ],
+        "accuracy": 0.856,
+        "accuracy_pct": 85.6,
+        "f1_weighted": 0.8552,
+        "precision_weighted": 0.8582,
+        "recall_weighted": 0.856,
+        "confusion_matrix": [
+            [
+                148,
+                23,
+                0
+            ],
+            [
+                22,
+                223,
+                6
+            ],
+            [
+                0,
+                21,
+                57
+            ]
+        ],
+        "per_class": [
+            {
+                "class": "Low Yield",
+                "precision": 0.8706,
+                "recall": 0.8655,
+                "f1_score": 0.868,
+                "support": 171
+            },
+            {
+                "class": "Medium Yield",
+                "precision": 0.8352,
+                "recall": 0.8884,
+                "f1_score": 0.861,
+                "support": 251
+            },
+            {
+                "class": "High Yield",
+                "precision": 0.9048,
+                "recall": 0.7308,
+                "f1_score": 0.8085,
+                "support": 78
+            }
+        ]
+    }
+}

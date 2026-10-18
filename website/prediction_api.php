@@ -3,6 +3,8 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store');
 require __DIR__ . '/config.php';
 require __DIR__ . '/device_config.php';
+require_once __DIR__ . '/calibration_config.php';
+
 function prediction_reply(array $body, int $status = 200): void {
     http_response_code($status); echo json_encode($body); exit;
 }
@@ -17,6 +19,24 @@ if (!$state || !(int)$state['sensor_ok'] || time() - (int)$state['received_at'] 
 $stmt = $pdo->prepare('SELECT * FROM sensor_logs WHERE id = ?');
 $stmt->execute([$state['latest_reading_id']]); $sample = $stmt->fetch();
 if (!$sample) prediction_reply(prediction_error('no_sample', 'Waiting for live sensor readings.'), 409);
+
+// Apply calibration so predictions use accurate, calibrated values
+$sample = treeco_apply_calibration_to_reading($sample);
+
+require_once __DIR__ . '/treeco_prediction.php';
+$fastPred = treeco_predict_yield(
+    (float)$sample['n'], (float)$sample['p'], (float)$sample['k'],
+    (float)$sample['ph'], (float)$sample['moisture'], (float)$sample['soil_temp']
+);
+if ($fastPred && !empty($fastPred['ok'])) {
+    prediction_reply([
+        'ok' => true,
+        'prediction_kg' => $fastPred['prediction_kg'],
+        'potential_kg' => $fastPred['potential_kg'],
+        'limiting_factors' => $fastPred['limiting_factors']
+    ], 200);
+}
+
 $input = [];
 foreach (['n', 'p', 'k', 'ph', 'moisture', 'soil_temp'] as $field) {
     if (!isset($sample[$field]) || !is_numeric($sample[$field]) || !is_finite((float)$sample[$field])) {
@@ -86,7 +106,35 @@ try {
             }
             if ($timedOut) { $result = prediction_error('timeout', 'Prediction timed out. Check Python and the model on this computer.'); break; }
             if ($exitCode === 0 && is_numeric($stdout) && is_finite((float)$stdout) && (float)$stdout >= 0) {
-                $result = ['ok' => true, 'prediction_kg' => round((float)$stdout, 2), 'sample_id' => (int)$sample['id'], 'calculated_at' => time(), 'message' => 'Prediction updated.'];
+                $metricsFile = __DIR__ . '/model_metrics.json';
+                $metrics = is_file($metricsFile) ? json_decode((string)file_get_contents($metricsFile), true) : null;
+                $predVal = round((float)$stdout, 2);
+
+                $limits = [];
+                $potential = $predVal;
+                if ((float)$sample['ph'] < 6.0 || (float)$sample['ph'] > 7.2) {
+                    $limits[] = 'Soil pH (' . $sample['ph'] . ') is outside optimal 6.0-7.2 range';
+                    $potential += 12.0;
+                }
+                if ((float)$sample['n'] < 100) {
+                    $limits[] = 'Nitrogen level (' . $sample['n'] . ' mg/kg) is deficient';
+                    $potential += 18.0;
+                }
+                if ((float)$sample['moisture'] < 50 || (float)$sample['moisture'] > 75) {
+                    $limits[] = 'Soil moisture (' . $sample['moisture'] . '%) is outside ideal 50-75% envelope';
+                    $potential += 10.0;
+                }
+
+                $result = [
+                    'ok' => true,
+                    'prediction_kg' => $predVal,
+                    'potential_kg' => round($potential, 2),
+                    'limiting_factors' => $limits,
+                    'model_metrics' => $metrics,
+                    'sample_id' => (int)$sample['id'],
+                    'calculated_at' => time(),
+                    'message' => 'Prediction updated with Random Forest Regressor.'
+                ];
                 break;
             }
             $details = $stdout . "\n" . $stderr;
@@ -95,7 +143,6 @@ try {
             } elseif (stripos($details, 'Error:') !== false || stripos($details, 'Traceback') !== false) {
                 $result = prediction_error('model_error', 'The model could not load or predict. Run predict.py in the website folder; retrain with train_model.py if the scikit-learn version is incompatible.');
             }
-            // Try another installed Python: it may contain the required packages.
         }
         @file_put_contents($base . '.json', json_encode(['at' => time(), 'signature' => $signature, 'result' => $result]), LOCK_EX);
     }

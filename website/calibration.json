@@ -1,0 +1,93 @@
+{
+    "mode": "realtime",
+    "sensors": {
+        "moisture": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "%",
+            "min": 0,
+            "max": 100,
+            "name": "Soil Moisture"
+        },
+        "soil_temp": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "\u00b0C",
+            "min": -40,
+            "max": 80,
+            "name": "Soil Temperature"
+        },
+        "ph": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "pH",
+            "min": 0,
+            "max": 14,
+            "name": "Soil pH"
+        },
+        "ec": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "\u00b5S/cm",
+            "min": 0,
+            "max": 20000,
+            "name": "Electrical Conductivity"
+        },
+        "n": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "mg/kg",
+            "min": 0,
+            "max": 1999,
+            "name": "Nitrogen"
+        },
+        "p": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "mg/kg",
+            "min": 0,
+            "max": 1999,
+            "name": "Phosphorus"
+        },
+        "k": {
+            "scale": 1,
+            "offset": 0,
+            "unit": "mg/kg",
+            "min": 0,
+            "max": 1999,
+            "name": "Potassium"
+        }
+    },
+    "thresholds": {
+        "n": {
+            "deficient": 100,
+            "optimal_max": 200
+        },
+        "p": {
+            "deficient": 30,
+            "optimal_max": 60
+        },
+        "k": {
+            "deficient": 150,
+            "optimal_max": 300
+        },
+        "ph": {
+            "deficient": 5.5,
+            "optimal_max": 7
+        },
+        "moisture": {
+            "dry": 45,
+            "optimal_min": 50,
+            "optimal_max": 75
+        },
+        "compost": {
+            "max_temp_mature": 35,
+            "max_ec_mature": 2500,
+            "optimal_ph_min": 6.5,
+            "optimal_ph_max": 8.2,
+            "optimal_moisture_min": 40,
+            "optimal_moisture_max": 60
+        }
+    },
+    "last_updated": "2026-10-17 21:11:17"
+}

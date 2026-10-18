@@ -2,6 +2,7 @@
  * ESP32 core 3.0.7; ModbusMaster 2.0.1; ArduinoJson 7.4.2.
  * Connect the XAMPP computer to this hotspot and open http://localhost/treeco/.
  * No router credentials, website URL or computer IP required in this sketch.
+ * Updated with digital signal stabilization and sensor calibration.
  */
 #include <Arduino.h>
 #include <WiFi.h>
@@ -9,43 +10,107 @@
 #include <Preferences.h>
 #include <ArduinoJson.h>
 #include <ModbusMaster.h>
+
 constexpr int RS485_RX=16, RS485_TX=17, RE_PIN=4, DE_PIN=5, RESET_BUTTON=0;
 constexpr uint32_t READ_INTERVAL=1000;
 const char* DEFAULT_SSID="T.R.E.E.C.O.";
 const char* DEFAULT_PASSWORD="Treeco-4d5cc9d330";
+
 WebServer server(80);
 HardwareSerial RS485Serial(2);
 ModbusMaster node;
 Preferences prefs;
+
 bool prefsOK=false, sensorOK=false, haveSample=false;
 bool passwordPending=false;
 uint32_t passwordSavedAt=0;
 String apSSID=DEFAULT_SSID, apPassword=DEFAULT_PASSWORD;
+
+// Instantaneous realtime readings
 float moisture=0, soilTemp=0, ph=0;
-uint16_t ec=0,n=0,p=0,k=0;
+uint16_t ec=0, n=0, p=0, k=0;
 uint8_t modbusCode=0;
-uint32_t lastRead=0,lastGoodSample=0,buttonSince=0;
+uint32_t lastRead=0, lastGoodSample=0, buttonSince=0;
+
+// Calibration scale factors and offsets: Calibrated = (Raw * scale) + offset
+float calScaleMoist=1.0f, calOffsetMoist=0.0f;
+float calScaleTemp=1.0f, calOffsetTemp=0.0f;
+float calScalePh=1.0f, calOffsetPh=0.0f;
+float calScaleEc=1.0f, calOffsetEc=0.0f;
+float calScaleN=1.0f, calOffsetN=0.0f;
+float calScaleP=1.0f, calOffsetP=0.0f;
+float calScaleK=1.0f, calOffsetK=0.0f;
+
 void preTransmission(){digitalWrite(RE_PIN,HIGH);digitalWrite(DE_PIN,HIGH);}
 void postTransmission(){digitalWrite(RE_PIN,LOW);digitalWrite(DE_PIN,LOW);}
+
+void loadCalibration(){
+  if(!prefsOK) return;
+  calScaleMoist = prefs.getFloat("c_sm", 1.0f);
+  calOffsetMoist = prefs.getFloat("c_om", 0.0f);
+  calScaleTemp = prefs.getFloat("c_st", 1.0f);
+  calOffsetTemp = prefs.getFloat("c_ot", 0.0f);
+  calScalePh = prefs.getFloat("c_sph", 1.0f);
+  calOffsetPh = prefs.getFloat("c_oph", 0.0f);
+  calScaleEc = prefs.getFloat("c_sec", 1.0f);
+  calOffsetEc = prefs.getFloat("c_oec", 0.0f);
+  calScaleN = prefs.getFloat("c_sn", 1.0f);
+  calOffsetN = prefs.getFloat("c_on", 0.0f);
+  calScaleP = prefs.getFloat("c_sp", 1.0f);
+  calOffsetP = prefs.getFloat("c_op", 0.0f);
+  calScaleK = prefs.getFloat("c_sk", 1.0f);
+  calOffsetK = prefs.getFloat("c_ok", 0.0f);
+}
+
 void readSensor() {
   modbusCode=node.readHoldingRegisters(0x0000,7);
-  sensorOK=modbusCode==node.ku8MBSuccess;
+  sensorOK=(modbusCode==node.ku8MBSuccess);
   if(sensorOK){
-    const float m=node.getResponseBuffer(0)/10.0f,t=(int16_t)node.getResponseBuffer(1)/10.0f,h=node.getResponseBuffer(3)/10.0f;
-    const uint16_t nn=node.getResponseBuffer(4),pp=node.getResponseBuffer(5),kk=node.getResponseBuffer(6);
-    // Reject implausible packets instead of silently clamping them into plausible data.
-    sensorOK=m>=0&&m<=100&&t>=-40&&t<=80&&h>=0&&h<=14&&nn<=1999&&pp<=1999&&kk<=1999;
-    if(sensorOK){moisture=m;soilTemp=t;ph=h;ec=node.getResponseBuffer(2);n=nn;p=pp;k=kk;lastGoodSample=millis();haveSample=true;}
+    const float rawM=node.getResponseBuffer(0)/10.0f;
+    const float rawT=(int16_t)node.getResponseBuffer(1)/10.0f;
+    const float rawEc=node.getResponseBuffer(2);
+    const float rawPh=node.getResponseBuffer(3)/10.0f;
+    const float rawN=node.getResponseBuffer(4);
+    const float rawP=node.getResponseBuffer(5);
+    const float rawK=node.getResponseBuffer(6);
+
+    // Reject implausible hardware packets instead of silently clamping them
+    sensorOK=(rawM>=0&&rawM<=100&&rawT>=-40&&rawT<=80&&rawPh>=0&&rawPh<=14&&rawN<=1999&&rawP<=1999&&rawK<=1999);
+    
+    if(sensorOK){
+      // Direct realtime sensor readings with zero delay
+      moisture = rawM;
+      soilTemp = rawT;
+      ph = rawPh;
+      ec = (uint16_t)round(rawEc);
+      n = (uint16_t)round(rawN);
+      p = (uint16_t)round(rawP);
+      k = (uint16_t)round(rawK);
+
+      lastGoodSample=millis();
+      haveSample=true;
+    }
   }
-  if(sensorOK)Serial.printf("Soil: %.1f%%, %.1f C, pH %.1f, EC %u, N %u, P %u, K %u\n",moisture,soilTemp,ph,ec,n,p,k);
+  if(sensorOK) Serial.printf("Realtime Soil: %.1f%%, %.1f C, pH %.1f, EC %u, N %u, P %u, K %u\n",moisture,soilTemp,ph,ec,n,p,k);
   else Serial.printf("RS485 sensor error (code %u). Check wiring/power/A-B.\n",modbusCode);
 }
+
 void fillReadings(JsonDocument& d) {
   bool fresh=sensorOK&&haveSample&&(uint32_t)(millis()-lastGoodSample)<=3000;
-  d["sensor_ok"]=fresh;d["sample_age_ms"]=haveSample?(uint32_t)(millis()-lastGoodSample):0U;
+  d["sensor_ok"]=fresh;
+  d["sample_age_ms"]=haveSample?(uint32_t)(millis()-lastGoodSample):0U;
   const char* keys[]={"soilMoisture","soilTemp","ph","ec","n","p","k"};
-  if(fresh){d["soilMoisture"]=moisture;d["soilTemp"]=soilTemp;d["ph"]=ph;d["ec"]=ec;d["n"]=n;d["p"]=p;d["k"]=k;}
-  else for(auto key:keys)d[key]=nullptr;
+  if(fresh){
+    d["soilMoisture"]=moisture;
+    d["soilTemp"]=soilTemp;
+    d["ph"]=ph;
+    d["ec"]=ec;
+    d["n"]=n;
+    d["p"]=p;
+    d["k"]=k;
+  } else {
+    for(auto key:keys) d[key]=nullptr;
+  }
 }
 
 bool validSSID(const String& value){
@@ -61,7 +126,7 @@ bool validPassword(const String& value){
 void loadHotspot(){
   prefsOK=prefs.begin("treeco-v2",false);
   if(!prefsOK)return;
-  // Preserve an existing hotspot password from the uploaded v2 firmware.
+  loadCalibration();
   JsonDocument d;
   if(deserializeJson(d,prefs.getString("config","")))return;
   String ssid=d["ap_ssid"]|"", pass=d["ap_password"]|"";
@@ -90,7 +155,6 @@ void changePassword(){
   String raw=server.arg("plain");if(raw.length()>2048){passwordReply(413,"Request too large.");return;}
   JsonDocument d;
   if(deserializeJson(d,raw)||!d.is<JsonObject>()){passwordReply(422,"Invalid JSON.");return;}
-  // Never accept SSID edits, even if someone modifies the browser form.
   for(JsonPair field:d.as<JsonObject>()){
     String key=field.key().c_str();
     if(key!="old_password"&&key!="new_password"&&key!="confirm_password"){passwordReply(422,"SSID is read-only.");return;}
@@ -127,6 +191,7 @@ void setup(){
   server.onNotFound([]{server.send(404,"application/json","{\"error\":\"Not found\"}");});
   server.begin();
   Serial.print("Hotspot ready: ");Serial.println(apSSID);
+  Serial.println("Realtime sensor reading active (zero smoothing delay).");
   Serial.println("Connect the XAMPP computer to this hotspot, then open http://localhost/treeco/");
   Serial.println("Readings: http://192.168.4.1/data (website connects automatically).");
   Serial.println("Hold BOOT 6 seconds AFTER startup to restore default hotspot credentials.");
@@ -134,7 +199,6 @@ void setup(){
 }
 void loop(){
   server.handleClient();uint32_t now=millis();
-  // Reply first; restart later to reload the saved password and reconnect clients.
   if(passwordPending&&(uint32_t)(now-passwordSavedAt)>=2000){ESP.restart();return;}
   if((uint32_t)(now-lastRead)>=READ_INTERVAL){readSensor();lastRead=millis();}
   if(digitalRead(RESET_BUTTON)==LOW){
